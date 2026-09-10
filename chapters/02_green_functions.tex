@@ -1,0 +1,777 @@
+\chapter{Green Function Theory}\label{chapter:theory}
+
+\section{The mathematical Perspective:}
+
+For a linear differential Operator $L$ with:
+\begin{equation*}
+    L_t\, x(t) = F(t)
+\end{equation*}
+where the subscript denotes that the operator acts on $t$.
+
+\bigskip
+
+One can take the inner product with a function $G(t,t')$ called a Green Function:
+\begin{align*}
+    \langle G(t,t') \,|\, L_{t'}\, x(t') \rangle &= \langle G(t,t') \,|\, F(t') \rangle \\
+    \int_{-\infty}^{\infty} dt'\, G(t,t')\, [L_{t'}\, x(t')] &= \int_{-\infty}^{\infty} dt'\, G(t,t')\, F(t') \\
+    \int_{-\infty}^{\infty} dt'\, \big[ L_{t'}^{\dagger}\, G(t,t') \big] x(t') &= \int_{-\infty}^{\infty} dt'\, G(t,t')\, F(t')
+\end{align*}
+
+assuming we can find a $G(t,t')$ such that
+\begin{equation*}
+    L_{t'}^{\dagger}\, G(t,t') = \delta(t-t'),
+\end{equation*}
+we have found the solution of the differential equation:
+\begin{equation*}
+    x(t) = \int_{-\infty}^{\infty} dt'\, G(t,t')\, F(t')
+\end{equation*}
+
+\bigskip
+
+When taking the hermitian conjugate of $L_t$, we are making use of the linearity of $L$, since we have assumed a linear definition of the scalar product. And therefore:
+\begin{align*}
+    \langle x \,|\, \hat{A}y + \hat{A}z \rangle &= \langle x \,|\, \hat{A}y \rangle + \langle x \,|\, \hat{A}z \rangle = \\
+    &= \langle \hat{A}^{\dagger} x \,|\, y \rangle + \langle \hat{A}^{\dagger} x \,|\, z \rangle \\
+    &= \langle \hat{A}^{\dagger} x \,|\, y + z \rangle = \langle x \,|\, \hat{A}(y+z) \rangle \\
+    \Rightarrow \hat{A} \text{ is linear if } \hat{A}^{\dagger} \text{ exists.}
+\end{align*}
+
+We can also insert the solution of $x(t)$ back into the differential equation:
+\begin{align*}
+    L_t\, x(t) &= F(t) \\
+    L_t \left[ \int_{-\infty}^{\infty} dt'\, G(t,t')\, F(t') \right] &= F(t) \\
+    \underset{\text{Linearity}}{\Rightarrow} \quad \int_{-\infty}^{\infty} dt'\, L_t \left[ G(t,t')\, F(t') \right] &= F(t) \\
+    \int_{-\infty}^{\infty} dt'\, L_t\, G(t,t')\, F(t') &= F(t) \\
+    \Rightarrow L_t\, G(t,t') &= \delta(t-t')
+\end{align*}
+
+and we find
+\begin{equation}
+    \boxed{L_t = L_{t'}^{\dagger}} \label{eq:diffopdagger}
+\end{equation}
+
+\section{Connection to Linear Response}
+
+Assume that the linear response function $\chi(t-t')$ is defined by the following relationship,
+where $F(t)$ is the input function and $x(t)$ is the response function:
+\begin{equation}
+    \boxed{x(t) = \int_{-\infty}^{\infty} dt'\, \chi(t-t')\, F(t')} \label{eq:linearresponse}
+\end{equation}
+
+\textbf{Note:} In this definition the theta function, which ensures that only previous input values influence the response, is included in the response function.
+
+Assume further that there is a linear differential operator $L_t$ such that $x(t)$ solves the differential equation:
+\begin{equation*}
+    L_t\, x(t) = F(t)
+\end{equation*}
+
+Then we find that the Green Function with
+\begin{equation*}
+    L_{t'}^{\dagger}\, G(t,t') = L_t\, G(t,t') = \delta(t-t')
+\end{equation*}
+is a linear response function in terms of \ref{eq:linearresponse}:
+\begin{align*}
+    L_t\, x(t) &= \int_{-\infty}^{\infty} L_t\, G(t,t')\, F(t')\, dt' \\
+    L_t\, x(t) &= F(t) \qquad \square
+\end{align*}
+
+So for linear differential operators we will consider response functions and Green Functions to be synonymous.
+
+\section{Linear Response Theory -- Kubo Formula}
+
+\textbf{Note:} The following provides a brief introduction to linear response theory and the Kubo formula
+and closely follows the presentation in \cite{bruus_flensberg_many-body_2002}.
+
+Consider a quantum system described by the (time independent) Hamiltonian $H_0$ in thermodynamic equilibrium. This leads to the following expectation value of an observable $\hat{A}$:
+\begin{equation*}
+    \langle \hat{A} \rangle = \frac{1}{Z_0} \sum_n \exp(-\beta E_n)\, \langle n | \hat{A} | n \rangle
+    \qquad \text{with } Z_0 = \sum_n \exp(-\beta E_n)
+\end{equation*}
+\begin{equation*}
+    \text{and } \quad \hat{H}_0 | n \rangle = E_n | n \rangle
+\end{equation*}
+
+Assume, starting at time $t_0$ the system behaves according to:
+\begin{equation*}
+    \hat{H} = \hat{H}_0 + \hat{V}(t)
+\end{equation*}
+
+We use the interaction picture to approximate the time evolution due to $\hat{V}(t)$ up to first order:
+\begin{align*}
+    \hat{V}_{H_0}(t) &= \exp(i H_0 t)\, \hat{V}(t)\, \exp(-i H_0 t) \\
+    \hat{n}(t) &= \exp(i H_0 t)\, n(t)
+\end{align*}
+
+then
+\begin{equation*}
+    \hat{n}(t) = \hat{U}_{H_0}(t,t_0)\, \hat{n}(t_0)
+\end{equation*}
+
+with
+\begin{equation*}
+    \hat{U}_{H_0}(t,t_0) = 1 - \frac{i}{\hbar} \int_{t_0}^{t} dt_1\, \hat{V}_{H_0}(t_1)
+    + \left(\frac{i}{\hbar}\right)^2 \int_{t_0}^{t} dt_1\, \hat{V}_{H_0}(t_1) \int_{t_0}^{t_1} dt_2\, \hat{V}_{H_0}(t_2) + \dots
+\end{equation*}
+
+which we approximate by
+\begin{equation*}
+    \hat{U}_{H_0}(t,t_0) \approx 1 - \frac{i}{\hbar} \int_{t_0}^{t} dt_1\, \hat{V}_{H_0}(t_1)
+\end{equation*}
+
+for the regular $|n\rangle$, we find by the interaction picture relationship:
+\begin{align*}
+    n(t) &= \exp(-i H_0 t)\, \hat{U}_{H_0}(t,t_0)\, \exp(i H_0 t_0)\, n(t_0) \\
+         &= \exp(-i H_0 t)\, \hat{U}_{H_0}(t,t_0)\, n(t_0)\, \exp(i E_n t_0)
+\end{align*}
+with $n(t_0) = |n\rangle$.
+
+And thus:
+\begin{align*}
+    \langle \hat{A} \rangle(t) &= \frac{1}{Z_0} \sum_n \exp(-\beta E_n)\, \langle n(t) | \hat{A} | n(t) \rangle \\[1ex]
+    &= \frac{1}{Z_0} \sum_n \exp(-\beta E_n)\, \langle n | \hat{U}_{H_0}^{\dagger}(t,t_0)\, \exp(i H_0 t)\, \hat{A}\, \exp(-i H_0 t)\, \hat{U}_{H_0}(t,t_0) | n \rangle \\[1ex]
+    &= \frac{1}{Z_0} \sum_n \exp(-\beta E_n)\, \langle n | \left(1 + \frac{i}{\hbar} \int_{t_0}^{t} \hat{V}_{H_0}(t_1)\, dt_1\right) \hat{A}_{H_0}(t) \\
+    &\qquad\qquad\qquad\qquad\qquad \left(1 - \frac{i}{\hbar} \int_{t_0}^{t} \hat{V}_{H_0}(t_1)\, dt_1\right) | n \rangle \\[1ex]
+    &= \frac{1}{Z_0} \sum_n \exp(-\beta E_n)\, \langle n | \hat{A} | n \rangle
+       - \frac{i}{\hbar} \int_{0}^{t} dt_1\, \frac{1}{Z_0} \sum_n \exp(-\beta E_n) \\
+    &\qquad\qquad \langle n | \hat{A}_{H_0}(t)\, \hat{V}_{H_0}(t_1) - \hat{V}_{H_0}(t_1)\, \hat{A}_{H_0}(t) | n \rangle \\[1ex]
+    &= \langle \hat{A} \rangle - \frac{i}{\hbar} \int_{0}^{t} dt_1\, \left\langle \left[ \hat{A}_{H_0}(t),\, \hat{V}_{H_0}(t_1) \right] \right\rangle \\[1ex]
+    &= \langle \hat{A} \rangle - \frac{i}{\hbar} \int_{0}^{\infty} dt_1\, \Theta(t-t_1)\, \left\langle \left[ \hat{A}_{H_0}(t),\, \hat{V}_{H_0}(t_1) \right] \right\rangle
+\end{align*}
+
+where we find the retarded bosonic Green function:
+\begin{equation}
+    \boxed{\,G^{R}_{A,V}(t,t_1) = -\frac{i}{\hbar}\, \Theta(t-t_1)\, \left\langle \left[ \hat{A}_{H_0}(t),\, \hat{V}_{H_0}(t_1) \right] \right\rangle\,} \label{eq:kuboformula}
+\end{equation}
+
+The Green function can be interpreted as a response function if one assumes:
+\begin{equation*}
+    \hat{V}(t) = F(t)\, \hat{V}'(t)
+\end{equation*}
+where $F(t) \in \mathbb{C}$ for all $t$. Then we find
+\begin{equation}
+    -\frac{i}{\hbar} \int_{0}^{\infty} dt_1\, \Theta(t-t_1)\, \left\langle \left[ \hat{A}_{H_0}(t),\, \hat{V}'_{H_0}(t_1) \right] \right\rangle F(t_1) \label{eq:Kubo-integral}
+\end{equation}
+for the integral. The result \eqref{eq:Kubo-integral} can be interpreted as the retarded Green function being the response function to the input function $F(t)$.
+
+\section{Green Functions: Definitions}
+This defines the Green functions with the most commonly used operators as well as
+the common time translation invariance. The section is intentionally kept specific such that it 
+can easily be used as a reference. The entire Green function section is losely based on books on this matter. \cite{bruus_flensberg_many-body_2002}\cite{mahan_many-particle_2000}\cite{rickayzen_green_1980}
+And the very detailed phd thesis by Mahdi Pourfath \cite{mahdi_2007}.
+
+\subsection*{Advanced Green Function}
+\begin{align}
+    G^{A}_{\sigma\sigma'}(r,t;r',t') &= (+i)\, \Theta(t'-t)\, \left\langle \left[ \psi_{\sigma}(r,t),\, \psi_{\sigma'}^{\dagger}(r',t') \right]_{\varepsilon} \right\rangle \\[1ex]
+    G^{A}_{i\sigma j\sigma'}(t;t') &= (+i)\, \Theta(t'-t)\, \left\langle \left[ \hat{C}_{i\sigma}(t),\, \hat{C}_{j\sigma'}^{\dagger}(t') \right]_{\varepsilon} \right\rangle
+\end{align}
+where $[\cdot,\cdot]_{-1} = [\cdot,\cdot]$ and $[\cdot,\cdot]_{1} = \{\cdot,\cdot\}$.
+
+Usually we have time translational invariance so we will be using:
+\begin{align}
+    G^{A}_{\sigma\sigma'}(r,r',t) &= (+i)\, \Theta(-t)\, \left\langle \left[ \psi_{\sigma}(r,t),\, \psi_{\sigma'}^{\dagger}(r') \right]_{\varepsilon} \right\rangle \\[1ex]
+    G^{A}_{i\sigma,j\sigma'}(t) &= (+i)\, \Theta(-t)\, \left\langle \left[ \hat{C}_{i\sigma}(t),\, \hat{C}_{j\sigma'}^{\dagger} \right]_{\varepsilon} \right\rangle
+\end{align}
+
+\subsection*{Retarded Green Function}
+\begin{align}
+    G^{R}_{\sigma\sigma'}(r,t;r',t') &= (-i)\, \Theta(t-t')\, \left\langle \left[ \psi_{\sigma}(r,t),\, \psi_{\sigma'}^{\dagger}(r',t') \right]_{\varepsilon} \right\rangle \\[1ex]
+    G^{R}_{i\sigma j\sigma'}(t;t') &= (-i)\, \Theta(t-t')\, \left\langle \left[ \hat{C}_{i\sigma}(t),\, \hat{C}_{j\sigma'}^{\dagger}(t') \right]_{\varepsilon} \right\rangle \\[1ex]
+    G^{R}_{\sigma\sigma'}(r,r',t) &= (-i)\, \Theta(t)\, \left\langle \left[ \psi_{\sigma}(r,t),\, \psi_{\sigma'}^{\dagger}(r') \right]_{\varepsilon} \right\rangle \\[1ex]
+    G^{R}_{i\sigma j\sigma'}(t) &= (-i)\, \Theta(t)\, \left\langle \left[ \hat{C}_{i\sigma}(t),\, \hat{C}_{j\sigma'}^{\dagger} \right]_{\varepsilon} \right\rangle \label{eq:retarded-green-tti}
+\end{align}
+
+\subsection*{Greater Keldysh Green Function}
+\begin{align}
+    G^{>}_{\sigma\sigma'}(r,t,r',t') &= (-i)\, \left\langle \psi_{\sigma}(r,t)\, \psi_{\sigma'}^{\dagger}(r',t') \right\rangle \\[1ex]
+    G^{>}_{i\sigma j\sigma'}(t,t') &= (-i)\, \left\langle \hat{C}_{i\sigma}(t)\, \hat{C}_{j\sigma'}^{\dagger}(t') \right\rangle \\[1ex]
+    G^{>}_{\sigma\sigma'}(r,r',t) &= (-i)\, \left\langle \psi_{\sigma}(r,t)\, \psi_{\sigma'}^{\dagger}(r') \right\rangle \\[1ex]
+    G^{>}_{i\sigma,j\sigma'}(t) &= (-i)\, \left\langle \hat{C}_{i\sigma}(t)\, \hat{C}_{j\sigma'}^{\dagger} \right\rangle
+\end{align}
+
+\subsection*{Lesser Keldysh Green Functions}
+\begin{align}
+    G^{<}_{\sigma\sigma'}(r,t,r',t') &= (+i)\, \left\langle \psi_{\sigma'}^{\dagger}(r',t')\, \psi_{\sigma}(r,t) \right\rangle \\[1ex]
+    G^{<}_{i\sigma j\sigma'}(t,t') &= (+i)\, \left\langle \hat{C}_{j\sigma'}^{\dagger}(t')\, \hat{C}_{i\sigma}(t) \right\rangle \\[1ex]
+    G^{<}_{\sigma\sigma'}(r,r',t) &= (+i)\, \left\langle \psi_{\sigma'}^{\dagger}(r')\, \psi_{\sigma}(r,t) \right\rangle \\[1ex]
+    G^{<}_{i\sigma j\sigma'}(t) &= (+i)\, \left\langle \hat{C}_{j\sigma'}^{\dagger}\, \hat{C}_{i\sigma}(t) \right\rangle
+\end{align}
+
+The expectation value in all Green function definitions is either taken with respect to the vacuum state $|0\rangle$, the ground state $|\psi_0\rangle$ or the thermal state $\sum_n \exp(-\beta E_n) |n\rangle$.
+The vacuum state expectation can only be used for specific cases, which will be explained in the section on the vacuum Green function.
+
+\subsection*{Matsubara/Imaginary time Green Functions}
+\begin{align}
+    G_{\sigma\sigma'}(r,\tau,r',\tau') &= -\left\langle \hat{T}\, \psi_{\sigma}(r,\tau)\, \psi_{\sigma'}^{\dagger}(r',\tau') \right\rangle \\[1ex]
+    G_{i\sigma j\sigma'}(\tau,\tau') &= -\left\langle \hat{T}\, \hat{C}_{i\sigma}(\tau)\, \hat{C}_{j\sigma'}^{\dagger}(\tau') \right\rangle \\
+    G_{\sigma\sigma'}(r,r',\tau) &= -\left\langle \psi_{\sigma}(r,-i\tau)\, \psi_{\sigma'}^{\dagger}(r') \right\rangle \Theta(\tau) \nonumber\\
+    &\quad + \varepsilon\, \left\langle \psi_{\sigma'}^{\dagger}(r')\, \psi_{\sigma}(r,-i\tau) \right\rangle \Theta(-\tau) \\[2ex]
+    G_{i\sigma j\sigma'}(\tau) &= -\left\langle \hat{C}_{i\sigma}(-i\tau)\, \hat{C}_{j\sigma'}^{\dagger} \right\rangle \Theta(\tau)\nonumber \\
+    &\quad + \varepsilon\, \left\langle \hat{C}_{j\sigma'}^{\dagger}\, \hat{C}_{i\sigma}(-i\tau) \right\rangle \Theta(-\tau) \label{eq:imag-time-green-tti}
+\end{align}
+
+where
+\begin{align*}
+    \hat{A}(\tau) &= \hat{S}^{-1}(\tau,0)\, \hat{A}\, \hat{S}(\tau,0) \\[1ex]
+    \hat{S}(\tau,\tau_0) &= \hat{T} \exp\left[ -\int_{\tau_0}^{\tau} d\tau'\, \hat{A}(\tau') \right]
+\end{align*}
+
+from
+\begin{equation*}
+    \frac{\partial}{\partial \tau} \left[ \hat{S}^{-1}(\tau,\tau_0)\, \hat{S}(\tau,\tau_0) \right] = 0
+\end{equation*}
+we find
+\begin{equation*}
+    \frac{\partial}{\partial \tau}\, \hat{S}^{-1}(\tau,\tau_0) = \hat{S}^{-1}(\tau,\tau_0)\, \hat{A}(\tau)
+\end{equation*}
+
+combined with the boundary condition
+\begin{equation*}
+    \hat{S}^{-1}(\tau_0,\tau_0) = \mathbb{1}
+\end{equation*}
+we find
+\begin{equation*}
+    \hat{S}^{-1}(\tau,\tau_0) = \hat{T}^{(R)} \exp\left[ +\int_{\tau_0}^{\tau} d\tau'\, \hat{A}(\tau') \right]
+\end{equation*}
+
+Where the time ordering operator $\hat{T}^{(R)}$ orders the operators in the opposite way as $\hat{T}$.
+In the time translation invariant case the operators are the usual Heisenberg operators as before.
+Here the expectation value refers to the thermal one. Sometimes using the limit $T \to 0$ one also finds the ground state expectation value.
+
+\textbf{Note:} For convenience, the prefacotor $\frac{1}{\hbar}$ appearing in the Kubo formula is omitted. \newline
+The Hamiltonian for fermions is even in the number of fermionic operators and 
+thus acts like a bosonic operator under the time ordering operator. 
+
+\section{The Vacuum Green Function}
+In the case of a non-interacting and time translationally invariant (fermionic) system, we can also take the expectation value with respect to the vacuum state. Then the retarded Green Function becomes:
+\begin{equation}
+    \boxed{\,G^{R}_{i\sigma j\sigma'}(t) = (-i)\, \Theta(t)\, \langle \text{vac} | \hat{C}_{i\sigma}\, \exp(-i\hat{H}t)\, \hat{C}_{j\sigma'}^{\dagger} | \text{vac} \rangle\,} \label{eq:vacuumGreenFunction}
+\end{equation}
+
+The other term of the anticommutator disappears, since the destruction operator acts on the vacuum state. The phase factor disappears, since $\hat{H} | \text{vac} \rangle = 0\, | \text{vac} \rangle$
+for a normal ordered Hamiltonian.
+
+Let's argue that both the retarded ground state and vacuum Green Function are the same in the non-interacting case:
+\begin{align}
+\begin{split}
+    G^{R,gs}_{i\sigma j\sigma'}(t) = (-i)\, \Theta(t) \Big[ &\langle \psi_0 | \hat{C}_{i\sigma}\, \exp(-i\hat{H}t)\, \hat{C}_{j\sigma'}^{\dagger} | \psi_0 \rangle\, \exp(i E_0 t) \\
+    + &\langle \psi_0 | \hat{C}_{j\sigma'}^{\dagger}\, \exp(i\hat{H}t)\, \hat{C}_{i\sigma} | \psi_0 \rangle\, \exp(-i E_0 t) \Big]
+\end{split}
+\label{eq:gs-ret-tti-gf}
+\end{align}
+
+For the sake of simplicity, assume $\hat{C}_j^{\dagger}$ creates a particle in the single particle eigenstate $|n_j\rangle$, where $\hat{H} |n_j\rangle = \varepsilon_j |n_j\rangle$.
+[If the creation operators would not be eigenstate creation operators, they could still be represented by linear combinations of the eigenstate creation operators and if the summands are equal the sums are equal.]
+\begin{align*}
+    \langle \psi_0 | \hat{C}_{i\sigma}\, \exp(-i\hat{H}t)\, \hat{C}_{j\sigma'}^{\dagger} | \psi_0 \rangle\, \exp(i E_0 t) &= \delta_{ij}\, \exp(-i(E_0 + \varepsilon_j)t)\, \exp(i E_0 t)\, \delta_{\sigma\sigma'} \\
+    &= \delta_{ij}\, \exp(-i \varepsilon_j t)\, \delta_{\sigma\sigma'}
+\end{align*}
+where $\varepsilon_j > 0$ since the state was empty in the ground state.
+\begin{equation*}
+    \langle \psi_0 | \hat{C}_{j\sigma'}^{\dagger}\, \exp(i\hat{H}t)\, \hat{C}_{i\sigma} | \psi_0 \rangle\, \exp(-i E_0 t) = \delta_{ij}\, \exp(-i \varepsilon_j t)\, \delta_{\sigma\sigma'}
+\end{equation*}
+where $\varepsilon_j < 0$ since the state was occupied in the ground state. And the chemical potential is set to zero.
+So overall we find:
+\begin{equation*}
+    G^{R,gs}_{i\sigma j\sigma'}(t) = (-i)\, \Theta(t)\, \delta_{ij}\, \delta_{\sigma\sigma'}\, \exp(-i \varepsilon_j t)
+\end{equation*}
+
+And for the vacuum Green function we find:
+\begin{align*}
+    G^{R,vac}_{i\sigma j\sigma'} &= (-i)\, \Theta(t)\, \langle \text{vac} | \hat{C}_{i\sigma}\, \exp(-i\hat{H}t)\, \hat{C}_{j\sigma'}^{\dagger} | \text{vac} \rangle \\
+    &= (-i)\, \Theta(t)\, \delta_{ij}\, \delta_{\sigma\sigma'}\, \exp(-i \varepsilon_j t)
+\end{align*}
+
+Here the $\varepsilon_j$'s are the eigenenergies of all single-particle states. $\square$
+
+Now we want to show that the retarded vacuum Green function \ref{eq:vacuumGreenFunction}, and therefore \ref{eq:gs-ret-tti-gf}, is a Green function of the
+single-particle Schrödinger equation in the mathematical sense. Considering the Schrödinger equation in the right basis this is straightforward:
+\begin{align*}
+    \forall n_j: \quad & i \frac{\partial}{\partial t} \langle n_j | \psi(t) \rangle - \langle n_j | \hat{H} | \psi(t) \rangle = 0 \\
+    \forall n_j: \quad & i \frac{\partial}{\partial t} \psi_{n_j}(t) - \varepsilon_j\, \psi_{n_j}(t) = 0
+\end{align*}
+where the $|\psi(t)\rangle$ is a single-particle wave function and the $|n_j\rangle$ are the single-particle eigenstates of $\hat{H}$.
+\begin{equation*}
+    \left[ i \frac{\partial}{\partial t} - \varepsilon_j \right] G^{R,vac}_{i\sigma j\sigma'}(t) = \delta(t)\, \delta_{ij}\, \delta_{\sigma\sigma'} \qquad \square
+\end{equation*}
+
+\section{A closer look at the temperature Green function: (Rickayzen\cite{rickayzen_green_1980})}
+
+The expectation value is taken with respect to the thermal state:
+\begin{align*}
+    G_{AB}(\tau,\tau') &= -\Theta(\tau-\tau')\, \left\langle \hat{A}(-i\tau)\, \hat{B}(-i\tau') \right\rangle \\
+    &\quad + \varepsilon\, \Theta(\tau'-\tau)\, \left\langle \hat{B}(-i\tau')\, \hat{A}(-i\tau) \right\rangle \\[1ex]
+    &= -\Theta(\tau-\tau')\, \mathrm{tr}\Big[ \exp(-\beta H)\, \exp(\tau H)\, \hat{A}\, \exp(-\tau H) \\
+    &\qquad\qquad\qquad \exp(\tau' H)\, \hat{B}\, \exp(-\tau' H) \Big] \frac{1}{Z} \\
+    &\quad + \varepsilon\, \Theta(\tau'-\tau)\, \mathrm{tr}\Big[ \exp(-\beta H)\, \exp(\tau' H)\, \hat{B}\, \exp(-\tau' H) \\
+    &\qquad\qquad\qquad \exp(\tau H)\, \hat{A}\, \exp(-\tau H) \Big] \frac{1}{Z} \\[1ex]
+    &= -\Theta(\tau-\tau')\, \mathrm{tr}\Big[ \exp(-\beta H)\, \exp(H(\tau-\tau'))\, \hat{A}\, \exp(-H(\tau-\tau'))\, \hat{B} \Big] \frac{1}{Z} \\
+    &\quad + \varepsilon\, \Theta(\tau'-\tau)\, \mathrm{tr}\Big[ \exp(-\beta H)\, \hat{B}\, \exp(H(\tau-\tau'))\, \hat{A}\, \exp(-H(\tau-\tau')) \Big] \frac{1}{Z} \\[1ex]
+    &= G_{AB}(\tau-\tau')
+\end{align*}
+
+For $0 < \tau \leq \beta$:
+\begin{align*}
+    G_{AB}(\tau-\beta) &= \varepsilon\, \mathrm{tr}\Big[ \exp(-\beta H)\, \hat{B}\, \exp(H(\tau-\beta))\, \hat{A}\, \exp(-H(\tau-\beta)) \Big] \frac{1}{Z} \\
+    &= \varepsilon\, \mathrm{tr}\Big[ \exp(-\beta H)\, \exp(\tau H)\, \hat{A}\, \exp(-\tau H)\, \hat{B} \Big] \frac{1}{Z} \\
+    &= -\varepsilon\, G_{AB}(\tau)
+\end{align*}
+
+So for fermions we find, that $G$ is a $2\beta$-periodic function. This derivation does not generalize to the 
+non-equilibrium case (H dependent on (imaginary) time). Since a Hamiltonian that is dependent on imaginary time, but
+time independent of real time would not be analytic one can also say H is independent of time. 
+
+Since $G(\tau)$ is $2\beta$ periodic we know we can find a Fourier expansion and the smallest frequency must be $\omega_{\min} = \frac{\pi}{\beta}$. Further of course $G(\tau+\beta) = -G(\tau)$, which leads to
+\begin{equation*}
+    \boxed{\,\omega_k = \left(\frac{2k+1}{\beta}\right)\pi\,} \quad \Rightarrow \quad \exp(i\omega_k \beta) = \exp(i(2k+1)\pi) = -1 \quad \forall k.
+\end{equation*}
+Those frequencies are the so called Matsubara frequencies.
+
+\textbf{Note:}
+One sometimes finds the combinations of imaginary time Green Function with the ground state expectation value and Matsubara frequencies where $\beta$ represents a made up temperature. 
+In the derivation we could already see that this separation is strictly speaking incorrect. Only in the limit $\beta \to \infty$ the ground state and the Matsubara frequencies can be combined.
+In this limit the thermal expectation value becomes the ground state expectation value and the Matsubara frequencies become continuous.
+If one assumes a $\beta$ for the Matsubara frequencies one also assumes a $\beta$ for the expectation value. That being said, for very large $\beta$ the approximation should be good enough.
+
+\section{Lehmann Representation}
+
+The Lehmann Representation can be used to verify calculations for small systems and 
+offers an easy but laborious way to analyse Green functions.
+It reduces to a single insertion of an identity in the form of eigenfunctions of the Hamiltonian:
+\begin{align*}
+    \hat{H} |\psi_n\rangle &= E_n |\psi_n\rangle \\
+    I &= \sum_n |\psi_n\rangle\langle\psi_n|
+\end{align*}
+
+where the $|\psi_n\rangle$ are all the eigenfunctions of the Hamiltonian and not just the ones for a specified occupation.
+
+\subsection*{Application: Retarded Green Function}
+
+\begin{align*}
+    G^{R}_{A,B}(t) &= (-i)\, \Theta(t)\, \left\langle \left[ \hat{A}(t),\, \hat{B} \right]_{\varepsilon} \right\rangle \\[1ex]
+    &= (-i)\, \Theta(t) \Big[ \left\langle \exp(i\hat{H}t)\, \hat{A}\, \exp(-i\hat{H}t)\, \hat{B} \right\rangle \\
+    &\qquad\qquad + \varepsilon \left\langle \hat{B}\, \exp(i\hat{H}t)\, \hat{A}\, \exp(-i\hat{H}t) \right\rangle \Big] \\[1ex]
+    &= (-i)\, \Theta(t) \Big[ \sum_n \left\langle \exp(i\hat{H}t)\, \hat{A}\, |\psi_n\rangle\langle\psi_n|\, \exp(-i\hat{H}t)\, \hat{B} \right\rangle \\
+    &\qquad\qquad + \varepsilon \sum_n \left\langle \hat{B}\, \exp(i\hat{H}t)\, |\psi_n\rangle\langle\psi_n|\, \hat{A}\, \exp(-i\hat{H}t) \right\rangle \Big] \\[1ex]
+    &= (-i)\, \Theta(t) \Big[ \sum_n \exp(-i E_n t)\, \left\langle \exp(i\hat{H}t)\, \hat{A}\, |\psi_n\rangle\langle\psi_n|\, \hat{B} \right\rangle \\
+    &\qquad\qquad + \varepsilon \sum_n \exp(i E_n t)\, \left\langle \hat{B}\, |\psi_n\rangle\langle\psi_n|\, \hat{A}\, \exp(-i\hat{H}t) \right\rangle \Big]
+\end{align*}
+
+The expectation value is intentionally left unspecified. One can already see that the two exponentials of the Hamiltonian will also become numbers for all the choices of expectation values discussed so far.
+The thermal expectation value, more accurately, introduces an additional sum over the eigenfunctions.
+
+\subsection*{Application: Imaginary Time Green Function}
+\begin{align*}
+    G_{AB}(\tau) &= -\left\langle \exp(\hat{H}\tau)\, \hat{A}\, \exp(-\hat{H}\tau)\, \hat{B} \right\rangle \Theta(\tau) \\
+    &\quad + \varepsilon \left\langle \hat{B}\, \exp(\hat{H}\tau)\, \hat{A}\, \exp(-\hat{H}\tau) \right\rangle \Theta(-\tau) \\[1ex]
+    &= -\sum_n \exp(-E_n \tau)\, \Theta(\tau)\, \left\langle \exp(\hat{H}\tau)\, \hat{A}\, |\psi_n\rangle\langle\psi_n|\, \hat{B} \right\rangle \\
+    &\quad + \varepsilon \sum_n \exp(E_n \tau)\, \Theta(-\tau)\, \left\langle \hat{B}\, |\psi_n\rangle\langle\psi_n|\, \hat{A}\, \exp(-\hat{H}\tau) \right\rangle
+\end{align*}
+
+Substituting the corresponding expectation values we find:
+
+\subsection*{Ground state Retarded Green Function:}
+\begin{align*}
+    G^{R}_{AB}(t) = (-i)\, \Theta(t) \Big[ &\sum_n \exp(it(E_0 - E_n))\, \langle\psi_0| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_0\rangle \\
+    + &\varepsilon \sum_m \exp(it(E_m - E_0))\, \langle\psi_0| \hat{B} |\psi_m\rangle\langle\psi_m| \hat{A} |\psi_0\rangle \Big]
+\end{align*}
+
+\subsection*{Thermal Retarded Green Function:}
+\begin{align*}
+    Z\, G^{R}_{AB}(t) &= (-i)\, \Theta(t) \Big[ \sum_n \sum_{n'} \exp(it(E_{n'} - E_n))\, \exp(-\beta E_{n'})\, \langle\psi_{n'}| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_{n'}\rangle \\
+    &\qquad\qquad + \varepsilon \sum_m \sum_{m'} \exp(it(E_m - E_{m'}))\, \exp(-\beta E_{m'})\, \langle\psi_{m'}| \hat{B} |\psi_m\rangle\langle\psi_m| \hat{A} |\psi_{m'}\rangle \Big] \\[1ex]
+    &= (-i)\, \Theta(t) \Big[ \sum_n \sum_{n'} \exp(it(E_{n'} - E_n))\, \langle\psi_{n'}| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_{n'}\rangle \left( \exp(-\beta E_{n'}) + \varepsilon \exp(-\beta E_n) \right) \Big]
+\end{align*}
+
+\subsection*{Ground state Imaginary Time Green Function:}
+\begin{align*}
+    G_{AB}(\tau) = &-\Theta(\tau) \sum_n \exp(\tau(E_0 - E_n))\, \langle\psi_0| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_0\rangle \\
+    &+ \varepsilon\, \Theta(-\tau) \sum_m \exp(\tau(E_m - E_0))\, \langle\psi_0| \hat{B} |\psi_m\rangle\langle\psi_m| \hat{A} |\psi_0\rangle
+\end{align*}
+
+\subsection*{Thermal Imaginary Time Green Function: ($-\beta \leq \tau \leq \beta$)}
+\begin{align}
+    \begin{split}
+    Z\, G_{AB}(\tau) = \sum_n \sum_{n'} \exp(\tau(E_{n'} - E_n))\, \langle\psi_{n'}| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_{n'}\rangle \\
+    \Big[ -\Theta(\tau)\exp(-\beta E_{n'}) + \varepsilon\, \Theta(-\tau)\exp(-\beta E_n) \Big]
+    \end{split} \label{eq:lehmann-thermal-imaginary-time}
+\end{align}
+
+Where $Z$ is the partition function.
+In equation \eqref{eq:lehmann-thermal-imaginary-time} the periodicity: $\lim_{\varkappa \to 0}G(0-\varkappa) = -\lim_{\varkappa \to 0}G(\beta-\varkappa)$
+becomes obvious.
+
+One can also see the "periodicity", more accurately decay, for the ground state imaginary time Green Function,
+since $E_0$ is the energy of the ground state $(E_0 - E_n)$ will always be negative so for $\tau \to \infty$, $G_{AB} \to 0$ and $(E_m - E_0)$ will always be positive so for $\tau \to -\infty$, $G_{AB} \to 0$.
+
+Most of the interesting properties of Green Functions require the Green Functions in the angular-frequency domain. 
+For the imaginary time Green Functions, we have already discovered, that they are periodic, thus a Fourier Transform is already justified. 
+For the retarded Green Function we instead use the Laplace transform to avoid the singularities on the real axis.
+
+\subsection*{Retarded Green Function in Frequency Domain}
+
+$\rightarrow$ Ground state:
+\begin{align*}
+    G^{R}_{AB}(\omega) &= \int_0^{\infty} dt\, \exp((i\omega - \eta)t)\, (-i)\, \Theta(t) \Big[ \sum_n \exp(it(E_0 - E_n)) \langle\psi_0| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_0\rangle \\
+    &\qquad\qquad + \varepsilon \sum_m \exp(it(E_m - E_0)) \langle\psi_0| \hat{B} |\psi_m\rangle\langle\psi_m| \hat{A} |\psi_0\rangle \Big] \\[1ex]
+    &= \sum_n \frac{\langle\psi_0| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_0\rangle}{\omega + i\eta + (E_0 - E_n)}
+       + \varepsilon \sum_m \frac{\langle\psi_0| \hat{B} |\psi_m\rangle\langle\psi_m| \hat{A} |\psi_0\rangle}{\omega + i\eta + (E_m - E_0)}
+\end{align*}
+
+\begin{equation}
+    \boxed{G^{R}_{AB}(\omega) = \sum_n \frac{\langle\psi_0| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_0\rangle}{\omega + i\eta + E_0 - E_n}
+    + \varepsilon \sum_m \frac{\langle\psi_0| \hat{B} |\psi_m\rangle\langle\psi_m| \hat{A} |\psi_0\rangle}{\omega + i\eta + E_m - E_0}} \label{eq:lehmann-groundstate-retarded-frequency}
+\end{equation}
+
+If one considers the typical case where $\hat{A}$ is a destruction operator and $\hat{B}$ a creation operator, \eqref{eq:lehmann-groundstate-retarded-frequency} has the property that particle excitations (first term) have singularities for positive real parts of $\omega$ and hole excitations (second term) have singularities only for negative real parts of $\omega$. This property is lost when going to thermal expectation value.
+
+$\rightarrow$ Thermal:
+\begin{equation}
+    \boxed{G^{R}_{AB}(\omega) = \frac{1}{Z} \sum_{n,m} \frac{\langle\psi_m| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_m\rangle}{\omega + i\eta + E_m - E_n} \left( \exp(-\beta E_m) + \varepsilon \exp(-\beta E_n) \right)} \label{eq:lehmann-thermal-retarded-frequency}
+\end{equation}
+
+\subsection*{Imaginary Time Green Function in Frequency Domain:}
+
+Since the period differs for fermions and bosons, only the fermionic case will be considered $\varepsilon = +1$ with a period of $2\beta$.
+The normalization constant $\frac{1}{\beta}$ is shifted to the inversetransform and the factor of $2$, we get from integrating over half the period, is absorbed into the normalization constant.
+
+$\rightarrow$ Thermal:
+\begin{align*}
+    G_{AB}(\omega_n) &= \int_0^{\beta} d\tau \sum_{n,m} \Big[ -\Theta(\tau)\exp(-\beta E_m) + \Theta(-\tau)\exp(-\beta E_n) \Big] \\
+    &\qquad \exp(\tau(E_m - E_n))\, \langle\psi_m| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_m\rangle\, \exp(i\omega_n \tau) \\[1ex]
+    &= \sum_{n,m} (-1) \int_0^{\beta} d\tau\, \exp(-\beta E_m)\, \exp(\tau(E_m - E_n))\, C_{nm}\, \exp(i\omega_n \tau) \\[1ex]
+    &= \sum_{n,m} C_{nm}\, (-1)\, \exp(-\beta E_m) \left[ \frac{1}{i\omega_n + E_m - E_n}\, \exp(\tau(E_m - E_n))\, \exp(i\omega_n \tau) \right]_0^{\beta} \\[1ex]
+    &= \sum_{n,m} C_{nm}\, \frac{-\exp(-\beta E_m)}{i\omega_n + E_m - E_n} \Big[ \exp(\beta(E_m - E_n)) - 1 \Big] \\[1ex]
+    &= \sum_{n,m} \frac{\langle\psi_m| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_m\rangle}{i\omega_n + E_m - E_n} \Big[ \exp(-\beta E_n) + \exp(-\beta E_m) \Big]
+\end{align*}
+
+\begin{equation}
+    \boxed{\,G_{AB}(\omega_n) = \sum_{n,m} \frac{\langle\psi_m| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_m\rangle}{i\omega_n + E_m - E_n} \Big[ \exp(-\beta E_n) + \exp(-\beta E_m) \Big]\,} \label{eq:lehmann-thermal-matsubara}
+\end{equation}
+
+with
+\begin{equation*}
+    G_{AB}(\tau) = \frac{1}{\beta} \sum_n \exp(-i\omega_n \tau)\, G_{AB}(\omega_n) \qquad n \in \mathbb{N}_0
+\end{equation*}
+
+$\rightarrow$ Ground state:
+\begin{equation}
+    \boxed{G_{AB}(\omega_n) = \sum_n \frac{\langle\psi_0| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_0\rangle}{i\omega - E_n + E_0}
+    + \sum_m \frac{\langle\psi_0| \hat{B} |\psi_m\rangle\langle\psi_m| \hat{A} |\psi_0\rangle}{i\omega + E_m - E_0}} \label{eq:lehmann-ground-state-matsubara}
+\end{equation}
+
+where the Matsubara frequencies are now continuous.
+
+Comparing \eqref{eq:lehmann-thermal-matsubara} with \eqref{eq:lehmann-thermal-retarded-frequency} and \eqref{eq:lehmann-groundstate-retarded-frequency} with \eqref{eq:lehmann-ground-state-matsubara} one can see,
+that in the frequency domain, the retarded and imaginary time Green Function can be obtained from one another
+by just replacing $\omega + i\eta$ by $i\omega_n$ (retarded $\rightarrow$ imaginary) or $i\omega_n$ by $\omega + i\eta$ (imaginary $\rightarrow$ retarded). 
+Another way to view this, is that there is a general Green Function $G : \mathbb{C} \rightarrow \mathbb{C}$ and the retarded Green Function values are the values on the slightly shifted real axis while the Matsubara Green function values are the values on the imaginary axis.
+
+So analytic continuation can be used (since both Green Functions are analytic) to obtain one from the other. In case of using the Lehmann representation to calculate the Green function: analytic continuation reduces to exchanging the variables, as mentioned before.
+Usually, for larger systems, one would not compute the Lehmann representation, at least not exactly, since that would require full diagonalization in the thermal case and diagonalization within the subspace of the ground state and the space spanned by states that overlap with $\hat{A}|\psi_0\rangle$, $\hat{A}^{\dagger}|\psi_0\rangle$, $\hat{B}|\psi_0\rangle$, $\hat{B}^{\dagger}|\psi_0\rangle$, in the ground state case.
+
+\section{Basis change for Green functions}
+
+The formula
+\begin{equation}
+    G_{ij} = \sum_{\alpha\beta} a_{i\alpha}\, a_{j\beta}^{*}\, G_{\alpha\beta} \label{eq:green-function-basis-change}
+\end{equation}
+relates Green functions in different bases, where the operators are related like:
+\begin{equation*}
+    \hat{C}_i = \sum_{\alpha} a_{i\alpha}\, \hat{d}_{\alpha}
+\end{equation*}
+with $a_{i\alpha} = \langle \varphi_i | \psi_\alpha \rangle$ and
+\begin{align*}
+    \hat{C}_i^{\dagger} |\text{vac}\rangle &= |\varphi_i\rangle \\
+    \hat{d}_{\alpha}^{\dagger} |\text{vac}\rangle &= |\psi_\alpha\rangle
+\end{align*}
+To verify the formula one just has to insert it into the definitions of the Green functions and since scalars commute with everything one immediately finds the identity in all cases.
+
+\section{Spectral Function}
+
+Consider a function of the following form:
+\begin{equation*}
+    f(\omega+i\eta) = \frac{1}{\omega + i\eta - \omega'}
+\end{equation*}
+then
+\begin{equation*}
+    \mathrm{Im}\, f(\omega+i\eta) = -\frac{\eta}{(\omega - \omega')^2 + \eta^2}
+\end{equation*}
+And $\lim_{\eta \to 0} \mathrm{Im}\, f(\omega+i\eta)$ like a delta function goes to infinity for $\omega = \omega'$ and is zero otherwise.
+So if we enforce the normalization condition:
+\begin{equation*}
+    - \int_{-\infty}^{\infty} \lim_{\eta \to 0} \mathrm{Im}\, f(\omega+i\eta)\, d\omega = 1
+\end{equation*}
+then $-\lim_{\eta \to 0} \mathrm{Im}\, f(\omega+i\eta)$ is equivalent to the delta function.
+
+\begin{align*}
+    - \int_{-\infty}^{\infty} \lim_{\eta \to 0} \mathrm{Im}\, f(\omega + i\eta)\, d\omega &= \lim_{\eta \to 0} \int_{-\infty}^{\infty} \frac{\eta}{(\omega - \omega')^2 + \eta^2}\, d\omega = \\
+    &= \lim_{\eta \to 0} \lim_{\omega'' \to \infty} \left[ \arctan\left(\frac{\omega''}{\eta}\right) - \arctan\left(\frac{-\omega''}{\eta}\right) \right] = \pi
+\end{align*}
+
+One can find $\frac{d}{dy} \arctan(y)$ over the relationship $\frac{d}{dx} \arctan(\tan(x)) = 1$ with $y = \tan(x)$.
+
+With the normalization constant, we find:
+\begin{equation*}
+    \delta(\omega - \omega') = -\frac{1}{\pi} \lim_{\eta \to 0} \mathrm{Im} \left[ \frac{1}{\omega + i\eta - \omega'} \right]
+\end{equation*}
+
+Using this relation we find for the imaginary part of the retarded Green Function, here with respect to the thermal expectation value:
+\begin{align*}
+    -\frac{1}{\pi} \lim_{\eta \to 0} \mathrm{Im} \left[ G^{R}_{AB}(\omega + i\eta) \right] = \frac{1}{Z} \sum_{n,m} &\langle\psi_m| \hat{A} |\psi_n\rangle\langle\psi_n| \hat{B} |\psi_m\rangle \\
+    &\left( \exp(-\beta E_m) + \varepsilon \exp(-\beta E_n) \right) \delta(\omega + E_m - E_n)
+\end{align*}
+
+In the fermionic case this function is called the spectral function and usually denoted $A(\omega)$ or $S(\omega)$.
+In the bosonic case the weight $1-\exp(-\beta \omega)$ is negative for $\omega < 0$ and positive for $\omega > 0$.
+The expression can therefore not be interpreted as a spectral function.
+
+The retarded Green Function can also be computed with the spectral function:
+\begin{equation}
+    G^{R}_{AB}(\omega + i\eta) = \int_{-\infty}^{\infty} d\omega'\, \frac{S(\omega')}{\omega + i\eta - \omega'} \label{eq:spectral-function-integral-relation}
+\end{equation}
+
+This relation also holds in the bosonic case, but is not a relation between Green Function and spectral function.
+
+\section{Equations of Motion}
+
+The equation of motion method can be used to calculate or approximate Green functions analytically and is used in the Wick theorem. For the derivation I will be assuming single particle operators with the properties $[\hat{C}_i, \hat{C}_j^{\dagger}]_{\varepsilon} = \delta_{ij}$ and $[\hat{C}_i, \hat{C}_j]_{\varepsilon} = 0$.
+The derivations are performed only for imaginary time Green functions, but wherever the relationship between real and imaginary angular frequency from the Lehmann chapter applies, the results generalize accordingly. For the general imaginary time single-particle Green function
+\begin{equation*}
+    G_{ij}(\tau,\tau') = -\left\langle \hat{T}\, \hat{C}_i(\tau)\, \hat{C}_j^{\dagger}(\tau') \right\rangle
+\end{equation*}
+we find the derivative
+\begin{align*}
+    \frac{\partial}{\partial \tau} G_{ij}(\tau,\tau') = &-\delta(\tau-\tau')\, \left\langle \hat{C}_i(\tau)\, \hat{C}_j^{\dagger}(\tau') + \varepsilon\, \hat{C}_j^{\dagger}(\tau')\, \hat{C}_i(\tau) \right\rangle \\
+    &-\left\langle \hat{T}\, [\hat{H}, \hat{C}_i](\tau)\, \hat{C}_j^{\dagger}(\tau') \right\rangle
+\end{align*}
+
+$\rightarrow$ Fourier Transform:
+
+For the Fourier transform, we have to further restrict the systems under consideration, since the periodicity of the imaginary time Green function holds only for equilibrium systems.
+Further, the cases of the ground state and thermal expectation value have to be considered separately.
+
+First, consider the left side of the equation for the ground state case:
+\begin{equation*}
+    \int_{-\infty}^{\infty} d\tau \left( \frac{\partial}{\partial \tau} G_{ij}(\tau) \right) \exp(i\omega\tau) = \left[ G_{ij}(\tau)\, \exp(i\omega\tau) \right]_{-\infty}^{\infty} - i\omega\, G_{ij}(\omega)
+\end{equation*}
+
+where the first term is zero, because of the decay property of the ground state imaginary time Green function, which holds for bosons and fermions.
+The normalization factor $2\pi$ was carried over to the inverse transform.
+
+For the thermal expectation value, we find:
+\begin{equation*}
+    \int_0^{\beta} d\tau\, \exp(i\omega_n \tau)\, \frac{\partial}{\partial \tau} G_{ij}(\tau) = \left[ G_{ij}(\tau)\, \exp(i\omega_n \tau) \right]_0^{\beta} - i\omega_n\, G_{ij}(\omega_n)
+\end{equation*}
+where the first term disappears, since
+\begin{equation*}
+    G_{ij}(\beta)\, \exp(i\omega_n \beta) = G_{ij}(0)\, \exp(i\omega_n 0),
+\end{equation*}
+for bosons and fermions. The normalization factor $\frac{1}{\beta}$ was again carried over to the inversetransform.
+
+The first term on the right-hand side of the differential equation becomes:
+\begin{equation*}
+    -\left\langle \hat{C}_i \hat{C}_j^{\dagger} + \varepsilon\, \hat{C}_j^{\dagger} \hat{C}_i \right\rangle = -\delta_{ij}
+\end{equation*}
+after the Fourier transform.
+
+To treat the last term let $\hat{H}$ be a normal ordered Hamiltonian that preserves the particle number and introduce the notation:
+\begin{align*}
+    \hat{C}_{\vec{i}}^{\dagger} &= \hat{C}_{i_1 \dots i_n}^{\dagger} = \hat{C}_{i_1}^{\dagger} \dots \hat{C}_{i_n}^{\dagger} \\
+    \hat{C}_{\vec{j}} &= \hat{C}_{j_1 \dots j_n} = \hat{C}_{j_1} \dots \hat{C}_{j_n}
+\end{align*}
+then the general Hamiltonian can be written as:
+\begin{align*}
+    \hat{H} &= \sum_{n=1}^{N} \sum_{\substack{i_1 \dots i_n \\ j_1 \dots j_n}} \hat{C}_{i_1 \dots i_n}^{\dagger}\, H_{i_1 \dots i_n, j_1 \dots j_n}\, \hat{C}_{j_1 \dots j_n} \\
+    &= \sum_{n=1}^{N} \sum_{\vec{i}, \vec{j}} \hat{C}_{\vec{i}}^{\dagger}\, H_{\vec{i}, \vec{j}}\, \hat{C}_{\vec{j}}
+\end{align*}
+
+Now let us consider a single $n$-body term of that Hamiltonian:
+\begin{equation*}
+    T_{\vec{i}, \vec{j}} = \hat{C}_{\vec{i}}^{\dagger}\, H_{\vec{i}, \vec{j}}\, \hat{C}_{\vec{j}}
+\end{equation*}
+
+and find the commutator
+\begin{equation*}
+    \left[ T_{\vec{i},\vec{j}},\, \hat{C}_i \right]
+\end{equation*}
+in the case, that $\forall k \in [1,n]: i_k \neq i$ the commutator is zero for fermions and bosons, since the number of operators in $T_{\vec{i},\vec{j}}$ is even.
+
+Now consider the case $i_k = i$ for some $k \in [1,n]$, for fermions:
+\begin{equation*}
+    T_{\vec{i},\vec{j}}\, \hat{C}_i = (-1)^{k-1}\, (-1)^{2n-1}\, \hat{C}_{i_k}^{\dagger}\, \hat{C}_i\, \hat{C}_{[1,n]\setminus k}^{\dagger}\, \hat{C}_{[1,n]}\, H_{[1,n]\setminus k \to i,\, [1,n]}
+\end{equation*}
+with $[1,n]\setminus k \to i = i_1 \dots i_{k-1}\, i\, i_{k+1} \dots i_n$ depending on the context $i_k \Leftrightarrow j_k$.
+\begin{equation*}
+    -\hat{C}_i\, T_{\vec{i},\vec{j}} = (-1)\, (-1)^{k-1}\, \hat{C}_i\, \hat{C}_{i_k}^{\dagger}\, \hat{C}_{[1,n]\setminus k}^{\dagger}\, \hat{C}_{[1,n]}\, H_{[1,n]\setminus k \to i,\, [1,n]}
+\end{equation*}
+so we find
+\begin{equation*}
+    \left[ T_{\vec{i},\vec{j}},\, \hat{C}_i \right] = (-1)^{k}\, \hat{C}_{[1,n]\setminus k}^{\dagger}\, H_{[1,n]\setminus k \to i,\, [1,n]}\, \hat{C}_{[1,n]}
+\end{equation*}
+
+In the bosonic case the result is the same if $i_k = i$ for only one $k \in [1,n]$, without the sign factor in front since the operators commute.
+
+When we substitute the commutator back into the remaining part of the differential equation, we get:
+
+\begin{align*}
+    &\left[ T_{\vec{i},\vec{j}},\, \hat{C}_i \right](\tau)\, \hat{C}_j^{\dagger}(\tau')\, \Theta(\tau-\tau') \\
+    &\quad - \hat{C}_j^{\dagger}(\tau')\, \left[ T_{\vec{i},\vec{j}},\, \hat{C}_i \right](\tau)\, \Theta(\tau'-\tau) = \\[1ex]
+    &= \hat{T}\Big[ \hat{C}_{i_1}^{\dagger}(\tau + (2n-2)\eta) \dots \hat{C}_{i_{k-1}}^{\dagger}(\tau + (2n-k)\eta)\, \hat{C}_j^{\dagger}(\tau') \\
+    &\qquad \hat{C}_{i_{k+1}}^{\dagger}(\tau + (2n-k-1)\eta) \dots \hat{C}_{i_n}^{\dagger}(\tau + n\eta)\, \hat{C}_{j_1}(\tau + (n-1)\eta) \dots \\
+    &\qquad \hat{C}_{j_n}(\tau) \Big]\, H_{[1,n]\setminus k \to i,\, [1,n]} \\[1ex]
+    &:= -G_{[1,n]\setminus k \to j,\, [1,n]}\big(\tau + (2n-2)\eta,\, \dots,\, \tau + (2n-k)\eta,\, \tau',\, \tau + (2n-k-1)\eta,\, \dots,\, \tau\big) \\
+    &\qquad H_{[1,n]\setminus k \to i,\, [1,n]}
+\end{align*}
+
+In the case $\tau > \tau'$ the time ordering operator has to use $(2n-k)$ permutations to move $\hat{C}_j^{\dagger}(\tau')$ to the end $(-1)^{2n-k}(-1)^k = 1$. And in the case $\tau' < \tau$ the time ordering operator has to use $(k-1)$ permutations to move $\hat{C}_j^{\dagger}(\tau')$ to the beginning, $(-1)^{k-1}(-1)^k = -1$.
+
+$\eta$ is chosen to be infinitesimal and just ensures the correct ordering of the operators.
+\begin{equation*}
+    - \left\langle \hat{T}\, [\hat{H}, \hat{C}_i](\tau)\, \hat{C}_j^{\dagger}(\tau') \right\rangle = \sum_{n=1}^{N} \sum_{k=1}^{n} \sum_{\substack{[1,n]\setminus k \\ [1,n]}} G_{[1,n]\setminus k \to j,\, [1,n]}(\tau',\tau)\, H_{[1,n]\setminus k \to i,\, [1,n]}
+\end{equation*}
+where $(\tau',\tau)$ is just a shorthand for the long, correct expression.
+This highlights the problem one encounters in the equations of motion approach when handling many-body Hamiltonians.
+For Hamiltonians with $n$-body operators, where $n \geq 2$, the imaginary time derivatives of the Green functions depend on ever increasing $n$-body Green functions.
+
+Let's explicitly denote the result for a one-body and time translation invariant Hamiltonian:
+\begin{align*}
+    -\left\langle \hat{T}\, [\hat{H}, \hat{C}_i](\tau)\, \hat{C}_j^{\dagger} \right\rangle &= \sum_{j_1} H_{i,j_1}\, G_{j_1 j}(0, \tau) \\
+    &= -\sum_{j_1} H_{i,j_1}\, G_{j_1 j}(\tau, 0)
+\end{align*}
+which yields the Fourier transform of the equation of motion:
+\begin{equation}
+    \boxed{\, -z\, G_{ij}(z) = -\delta_{ij} - \sum_{j_1} H_{i,j_1}\, G_{j_1 j}(z) \,} \label{eq:one-body-green-realtionship}
+\end{equation}
+with $z = i\omega$ or $z = i\omega_n$.
+
+\section{The non-interacting SIAM}
+\begin{equation*}
+    \hat{H} = \varepsilon_0\, \hat{C}_{0}^{\dagger}\, \hat{C}_{0} + \sum_{i=1}^{N} \varepsilon_i\, \hat{C}_i^{\dagger}\, \hat{C}_i + t_i\, \hat{C}_0^{\dagger}\, \hat{C}_i + t_i^{*}\, \hat{C}_i^{\dagger}\, \hat{C}_0
+\end{equation*}
+
+This is a specific case of the non-interacting SIAM, one, that I have been mostly working with, where the hopping terms from bath site to bath site are zero. 
+Further, because of the non-interacting nature, the spins decouple. 
+The Hamiltonian could be for either spin. That this form does not present a simplification you find immediately, if
+you assume a general bath and then diagonalize the bath operators (but not the impurity operators). 
+The zero-site, in this notation, is the impurity site. 
+To find the local impurity Green function $G_{00}(z)$, we can use the result \eqref{eq:one-body-green-realtionship}:
+\begin{align}
+    z\, G_{00}(z) &= 1 + \sum_{\substack{j_1 = 0}}^{N} H_{0 j_1}\, G_{j_1 0}(z) \nonumber \\
+    z\, G_{00}(z) &= 1 + \varepsilon_0\, G_{00}(z) + \sum_{j_1 = 1}^{N} t_{j_1}\, G_{j_1 0}(z) \label{eq:ni-SIAM-impurity-relation}
+\end{align}
+where $G_{j_1 0}(z)$, $j_1 \in [1,N]$ again fulfills \eqref{eq:one-body-green-realtionship}:
+\begin{align*}
+    z\, G_{j_1 0}(z) &= \sum_{j_2 = 0}^{N} H_{j_1 j_2}\, G_{j_2 0}(z) \\
+    z\, G_{j_1 0}(z) &= t_{j_1}^{*}\, G_{00}(z) + \varepsilon_{j_1}\, G_{j_1 0}(z) \\
+    G_{j_1 0}(z) &= \frac{t_{j_1}^{*}}{z - \varepsilon_{j_1}}\, G_{00}(z)
+\end{align*}
+
+inserting back into \eqref{eq:ni-SIAM-impurity-relation} we find:
+\begin{equation*}
+    \left( z - \varepsilon_0 - \sum_{j_1 = 1}^{N} \frac{|t_{j_1}|^2}{z - \varepsilon_{j_1}} \right) G_{00}(z) = 1
+\end{equation*}
+\begin{equation}
+    \boxed{\, G_{00}(z) = \left[ z - \varepsilon_0 - \sum_{j_1 = 1}^{N} \frac{|t_{j_1}|^2}{z - \varepsilon_{j_1}} \right]^{-1} = \big[ z - \varepsilon_0 - \Delta(z) \big]^{-1} \,} \label{eq:ni-SIAM-green-function}
+\end{equation}
+with hybridization function:
+\begin{equation}
+    \boxed{\Delta(z) = \sum_{j_1 = 1}^{N} \frac{|t_{j_1}|^2}{z - \varepsilon_{j_1}}} \label{eq:hybridization}
+\end{equation}
+
+\subsection*{Alternative: Partial Matrix Inverse}
+
+Since $\hat{H}$ is a non-interacting Hamiltonian it would also suffice to consider the vacuum Green Function:
+\begin{align*}
+    G_{00}(\tau) &= -\Theta(\tau)\, \langle \text{vac} | \hat{C}_0(\tau)\, \hat{C}_0^{\dagger} | \text{vac} \rangle \\
+    &= -\Theta(\tau)\, \langle \text{vac} | \hat{C}_0\, \exp(-\hat{H}\tau)\, \hat{C}_0^{\dagger} | \text{vac} \rangle \\
+    &= -\Theta(\tau) \sum_{n,n'} \langle \psi_0 | \psi_n \rangle\langle \psi_n | \exp(-\hat{H}\tau) |\psi_{n'}\rangle\langle\psi_{n'}| \psi_0 \rangle \\
+    &= -\Theta(\tau) \sum_n \exp(-E_n \tau)\, \langle \psi_0 | \psi_n \rangle\langle \psi_n | \psi_0 \rangle
+\end{align*}
+where $\hat{H}|\psi_n\rangle = E_n|\psi_n\rangle$, $|\psi_n\rangle$ are the one-particle eigenfunctions.
+\begin{align*}
+    G_{00}(i\omega) &= -\int_0^{\infty} d\tau\, \exp(i\omega\tau) \sum_n \exp(-E_n \tau)\, \langle \psi_0 |\psi_n\rangle\langle\psi_n| \psi_0 \rangle \\
+    &= \sum_n \frac{1}{i\omega - E_n}\, \langle \psi_0 |\psi_n\rangle\langle\psi_n| \psi_0 \rangle \\
+    &= \sum_n \langle \psi_0 | \big[ i\omega\,\mathbb{1} - \hat{H} \big]^{-1} |\psi_n\rangle\langle\psi_n| \psi_0 \rangle \\
+    &= \langle \text{vac} | \hat{C}_0\, \big[ i\omega\,\mathbb{1} - \hat{H} \big]^{-1}\, \hat{C}_0^{\dagger} | \text{vac} \rangle
+\end{align*}
+So if we interpret $[i\omega\,\mathbb{1} - \hat{H}]^{-1}$ as a matrix $\underline{M}$, this corresponds to the entry $(\underline{M})_{00}$.
+This is consistent with the result of the equation of motion section \eqref{eq:one-body-green-realtionship}.
+
+For two matrices
+\begin{equation*}
+    \underline{M} = \begin{pmatrix} \underline{M}_{11} & \underline{M}_{12} \\ \underline{M}_{21} & \underline{M}_{22} \end{pmatrix}, \qquad
+    \underline{N} = \begin{pmatrix} \underline{N}_{11} & \underline{N}_{12} \\ \underline{N}_{21} & \underline{N}_{22} \end{pmatrix}
+\end{equation*}
+with
+\begin{equation*}
+    \underline{M} \cdot \underline{N} = \mathbb{1}
+\end{equation*}
+we find by solving the relationship for the $\underline{M}_{ij}$
+\begin{equation*}
+    \underline{M}_{11} = \left[ \underline{N}_{11} - \underline{N}_{12}\, \underline{N}_{22}^{-1}\, \underline{N}_{21} \right]^{-1}
+\end{equation*}
+or with $\underline{N} = z\,\mathbb{1} - \underline{H}$ where $\hat{H} = \vec{\hat{C}}^{\dagger}\, \underline{H}\, \vec{\hat{C}}$ we find:
+\begin{align*}
+    \left( \left[ z\,\mathbb{1} - \underline{H} \right]^{-1} \right)_{00} &= \left[ (z - \varepsilon_0) - (t_1 \dots t_N)
+    \begin{pmatrix} \frac{1}{z - \varepsilon_1} & & \\ & \ddots & \\ & & \frac{1}{z - \varepsilon_N} \end{pmatrix}
+    \begin{pmatrix} t_1^{*} \\ \vdots \\ t_N^{*} \end{pmatrix} \right]^{-1} \\[1ex]
+    &= \left[ z - \varepsilon_0 - \sum_{i=1}^{N} \frac{|t_i|^2}{z - \varepsilon_i} \right]^{-1}
+\end{align*}
+
+\textbf{Note:} The singularities of a non-interacting Green function are located at the eigenvalues of $\underline{H}$. Therefore, it would be interesting if one could efficiently compute the eigenvalues of a hermitian matrix $\underline{H}$,
+by first determining the Green functios \eqref{eq:one-body-green-realtionship} directly via \eqref{eq:one-body-green-realtionship} and then Fourier transform the Green function on the real axis (singularities are ideal for Fourier transform)
+to time domain, where one could then use the prony method to fit the frequencies/eigenvalues.
+
+\section{Local Green function of the non-interacting Hubbard Model in 1D}
+\begin{equation*}
+    \hat{H} = -t \sum_l \left( \hat{C}_l^{\dagger}\, \hat{C}_{l+1} + \hat{C}_{l+1}^{\dagger}\, \hat{C}_l \right) - \mu \sum_l \hat{C}_l^{\dagger}\, \hat{C}_l
+\end{equation*}
+with $t, \mu \in \mathbb{R}$. The Fourier Transform
+\begin{align}
+    \hat{C}_l &= \frac{1}{\sqrt{N}} \sum_k \hat{d}_k\, \exp(ikl) \label{eq:ni-hubbard-base-change} \\ 
+    \hat{C}_l^{\dagger} &= \frac{1}{\sqrt{N}} \sum_k \hat{d}_k^{\dagger}\, \exp(-ikl)
+\end{align}
+leads to the diagonal Hamiltonian:
+\begin{equation*}
+    \hat{H} = \sum_k \left( -2t\cos(k) - \mu \right) \hat{d}_k^{\dagger}\, \hat{d}_k = \sum_k \varepsilon_k\, \hat{d}_k^{\dagger}\, \hat{d}_k
+\end{equation*}
+with bandwidth $W = 4t$.
+We choose the eigenstates in $k$-space to be the product states, this choice is worth being mentioned, since the $(k)$-state and $(-k)$-state have the same energy.
+The groundstate is the state with all $\frac{-\pi}{2}<k<\frac{\pi}{2}$ states occupied.
+And consider the Lehmann representation of the ground state retarded Green function \eqref{eq:lehmann-groundstate-retarded-frequency}:
+\begin{align*}
+    G^{R}_{k_1 k_2}(\omega) &= \sum_n \frac{\langle \psi_0 | \hat{C}_{k_1} |\psi_n\rangle\langle\psi_n| \hat{C}_{k_2}^{\dagger} |\psi_0\rangle}{\omega + i\eta + E_0 - E_n} \\
+    &\quad + \sum_m \frac{\langle \psi_0 | \hat{C}_{k_2}^{\dagger} |\psi_m\rangle\langle\psi_m| \hat{C}_{k_1} |\psi_0\rangle}{\omega + i\eta + E_m - E_0} \\
+    &= \delta_{k_1 k_2}\, \frac{1}{\omega + i\eta - \varepsilon_{k_1}}
+\end{align*}
+using the Green function basis change relation \eqref{eq:green-function-basis-change} and the basis change \eqref{eq:ni-hubbard-base-change}:
+\begin{align*}
+    G^{R}_{l_1 l_2}(\omega) &= \sum_{k_1 k_2} a_{l_1 k_1}\, a_{l_2 k_2}^{*}\, G^{R}_{k_1 k_2}(\omega) \\
+    &= \sum_{k_1} \frac{1}{N}\, \exp(i k_1 l_1)\, \exp(-i k_1 l_2)\, \frac{1}{\omega + i\eta - \varepsilon_{k_1}} \\
+    &= \frac{1}{N} \sum_k \frac{1}{\omega + i\eta - \varepsilon_k}\, \exp(i k (l_1 - l_2))
+\end{align*}
+and for the local Green function:
+\begin{equation*}
+    G^{R}_{ll}(\omega) = \frac{1}{N} \sum_k \frac{1}{\omega + i\eta - \varepsilon_k}
+\end{equation*}
+and using \eqref{eq:spectral-function-integral-relation}, we find the spectral function:
+\begin{equation*}
+    S(\omega) = \frac{1}{N} \sum_k \delta(\omega - \varepsilon_k)
+\end{equation*}
+
+Based on the discrete spectral function, we can also define its continuous analogon:
+\begin{align*}
+    S(\omega) &:= \frac{1}{2\pi} \int_{-\pi}^{\pi} dk\, \delta(\omega - \varepsilon(k)) = \frac{1}{2\pi} \int_{-\pi}^{\pi} dk\, \delta(\omega + 2t\cos(k) + \mu) \\
+    &= \frac{1}{\pi} \int_{0}^{\pi} dk\, \delta(\omega + 2t\cos(k) + \mu)
+\end{align*}
+
+\underline{Substitution:} \qquad $\sigma = \omega + 2t\cos(k)$ \qquad\qquad $\sigma_0 = \omega + 2t$
+\begin{equation*}
+    \frac{\partial \sigma}{\partial k} = -\sqrt{4t^2 - (\sigma - \omega)^2} \qquad\qquad \sigma_\pi = \omega - 2t
+\end{equation*}
+\begin{align*}
+    &= \frac{1}{\pi} \int_{\omega - 2t}^{\omega + 2t} d\sigma\, \frac{1}{\sqrt{4t^2 - (\sigma - \omega)^2}}\, \delta(\sigma + \mu) \\
+    &= \frac{1}{\pi}\, \frac{1}{\sqrt{4t^2 - (\mu + \omega)^2}}
+\end{align*}
+
+Since the delta-function can only give a distribution when $-\mu - 2t \leq \omega \leq -\mu + 2t$, the formula only applies to the frequencies within that range.

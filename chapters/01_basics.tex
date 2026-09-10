@@ -1,0 +1,660 @@
+\chapter{Quantum Basics}
+
+\section{Second Quantization} 
+
+\subsection{One-particle basis functions}
+
+Any basis of a space must span the space and consist of linearly
+independent elements of that space. The formulation here is restricted
+to finite-dimensional vector/function spaces equipped with an inner
+product. In practice, this will be the case anyway, and the
+formulation is simpler this way.
+We can formulate the condition of $\{|\varphi_n\rangle\}$ spanning the
+space $\Phi$ by requiring, for all $|\varphi\rangle\in\Phi$, that there
+exists a set of coefficients $\{c_1,\dots,c_N\}$ such that
+
+\begin{equation}\label{eq:basis-expansion}
+|\varphi\rangle = \sum_{n=1}^N c_n|\varphi_n\rangle = \big(|\varphi_1\rangle\ \cdots\ |\varphi_N\rangle\big)\begin{pmatrix}c_1\\\vdots\\c_N\end{pmatrix}.
+\end{equation}
+
+We can find a linear system of equations for the coefficients by
+considering
+
+\begin{equation}
+\langle\varphi_m|\varphi\rangle = \sum_{n=1}^N c_n \langle\varphi_m|\varphi_n\rangle,
+\end{equation}
+
+so the linear system of equations becomes
+
+\begin{equation}\label{eq:gram-matrix}
+\begin{pmatrix}\langle\varphi_1|\varphi\rangle\\\vdots\\\langle\varphi_N|\varphi\rangle\end{pmatrix}
+=
+\begin{pmatrix}\langle\varphi_1|\varphi_1\rangle & \cdots & \langle\varphi_1|\varphi_N\rangle\\ \vdots & & \vdots \\ \langle\varphi_N|\varphi_1\rangle & \cdots & \langle\varphi_N|\varphi_N\rangle\end{pmatrix}
+\begin{pmatrix}c_1\\\vdots\\c_N\end{pmatrix},
+\end{equation}
+
+with the Gram matrix $\mathbf{S}$:
+
+\begin{equation}
+\mathbf{S} = \begin{pmatrix}\langle\varphi_1|\varphi_1\rangle & \cdots & \langle\varphi_1|\varphi_N\rangle\\ \vdots & & \vdots \\ \langle\varphi_N|\varphi_1\rangle & \cdots & \langle\varphi_N|\varphi_N\rangle\end{pmatrix}.
+\end{equation}
+
+Solving for $\vec c$, we find
+
+\begin{equation}
+\vec c = \mathbf{S}^{-1}\begin{pmatrix}\langle\varphi_1|\varphi\rangle\\\vdots\\\langle\varphi_N|\varphi\rangle\end{pmatrix},
+\end{equation}
+
+and inserting $\vec c$ back into \eqref{eq:basis-expansion}, we find
+
+\begin{equation}\label{eq:completeness-eigenfunction-phi}
+|\varphi\rangle = \sum_n\sum_m |\varphi_n\rangle\left(\mathbf{S}^{-1}\right)_{nm}\langle\varphi_m|\varphi\rangle
+\end{equation}
+
+and therefore
+
+\begin{equation}\label{eq:completeness-eigenfunction}
+\sum_n\sum_m |\varphi_n\rangle\left(\mathbf{S}^{-1}\right)_{nm}\langle\varphi_m| = \mathbb{1}.
+\end{equation}
+
+\subsubsection*{Proving the Gram matrix is invertible}
+
+$\mathbf{S}$ invertible implies, for a finite-dimensional space, that
+the kernel must be trivial:
+
+\begin{equation}
+\mathbf{S}\vec a = 0 \iff \vec a = 0.
+\end{equation}
+
+Consider
+
+\begin{equation}
+\begin{pmatrix}\langle\varphi_1|\varphi_1\rangle & \cdots & \langle\varphi_1|\varphi_N\rangle\\ \vdots & & \vdots \\ \langle\varphi_N|\varphi_1\rangle & \cdots & \langle\varphi_N|\varphi_N\rangle\end{pmatrix}
+\begin{pmatrix}a_1\\\vdots\\a_N\end{pmatrix}
+=
+\begin{pmatrix}0\\\vdots\\0\end{pmatrix}.
+\end{equation}
+
+Then, for all $m=1,\dots,N$,
+
+\begin{equation}
+\Big\langle\varphi_m\Big|\sum_{n=1}^N a_n\varphi_n\Big\rangle = 0
+\end{equation}
+
+holds. In words: there is a vector $|\varphi_a\rangle=\sum_{n=1}^N a_n|\varphi_n\rangle$
+which lies in $\Phi$ and is yet orthogonal to each vector
+$|\varphi_m\rangle$, $m=1,\dots,N$, which span the space and thereby also to itself. The only
+vector that fulfils this requirement is the zero vector. Therefore we
+find the new condition:
+
+\begin{equation}
+\sum_{n=1}^N a_n |\varphi_n\rangle \overset{!}{=} 0.
+\end{equation}
+
+Since the vectors of the set $\{|\varphi_n\rangle\}_{n=1}^N$ are linearly independent
+, this equation is only satisfied by $\vec a=\vec 0$. Meaning
+that the kernel is trivial, which implies $\mathbf{S}$ is invertible.
+
+\subsubsection*{Going to infinite dimensions} 
+In the infinite-dimensional case the requirements have
+to be formulated more carefully. The kernel being trivial will not
+suffice for the operator $\mathbf{S}$ to be invertible: since the
+operator is now a map between two countably infinite-dimensional
+spaces, the infinite-matrix picture for $\mathbf{S}$ remains valid, but
+$\mathbf{S}$ must additionally fulfil the property that its spectrum be
+bounded from above and below. In the finite-dimensional case,
+boundedness from below and trivial kernel are equivalent. An
+infinite-dimensional example of a non-invertible operator with trivial
+kernel is
+
+\begin{equation}
+\mathbf{S} = \begin{pmatrix} 1 & & & 0 \\ & \tfrac12 & & \\ & & \tfrac13 & \\ 0 & & & \ddots \end{pmatrix}.
+\end{equation}
+
+The kernel is trivial, but there exists no $A>0$ such that for all
+$c\in\ell^2$,
+
+\begin{equation}
+A\|c\| \le \|\mathbf{S}c\|.
+\end{equation}
+
+This means the range that $\mathbf{S}$ maps onto is \emph{not closed},
+and the inverse operator has diverging entries.
+
+To see the problem with unbounded operators like $\mathbf{S}^{-1}$ in this
+example:
+
+\begin{equation}
+\mathbf{S}^{-1} = \begin{pmatrix} 1 & & & \\ & 2 & & \\ & & 3 & \\ & & & \ddots \end{pmatrix}
+\end{equation}
+
+Consider the sequence $a_n = (1/n)_{n\in\mathbb{N}}$, which lies within
+$\ell^2$ since $\sum_{n\in\mathbb{N}}(1/n)^2$ converges. However,
+
+\begin{equation}
+\mathbf{S}^{-1}a = (1,1,1,\dots),
+\end{equation}
+
+where $\sum_{n\in\mathbb{N}}1^2\to\infty$ is not finite. The operator
+$\mathbf{S}^{-1}$ therefore maps a sequence that lies within $\ell^2$
+out of $\ell^2$.
+
+\subsubsection*{The bra is not the dual element}
+
+Let $\{|\varphi_n\rangle\}$ be the set of basis vectors of a vector
+space $V$. Then the elements of the dual set $\{\langle\tilde\varphi_n|\}$
+have the property:
+
+\begin{equation}
+\langle\tilde\varphi_m|\varphi_n\rangle = \delta_{mn}.
+\end{equation}
+
+This property is obviously not fulfilled by the definition of the
+bra's (only for orthogonal vectors). We can find the dual elements via
+equation \eqref{eq:identity-eigenfunction} to be:
+
+\begin{equation}
+\langle\tilde\varphi_m| = \sum_{m'}\left(\mathbf{S}^{-1}\right)_{mm'}\langle\varphi_{m'}|.
+\end{equation}
+
+The bra $\langle\varphi_m|$ is still an element of the dual space,
+however with:
+
+\begin{align}
+\langle\varphi_m|&: V\to\mathbb K\\
+|\varphi\rangle &\mapsto \int dx\,\varphi_m^*(x)\,\varphi(x).\label{eq:functional-map-to-inner}
+\end{align}
+
+For an orthogonal basis, this definition agrees with the definition of
+the dual element, for that reason it often goes unnoticed that $\langle\varphi_m|$ is
+not in general the dual element to $|\varphi_m\rangle$.
+
+\subsection*{The position and momentum bra's and ket's}
+
+Consider the definition of the scalar product of two wave functions as
+demonstrated in \eqref{eq:functional-map-to-inner}. We can interpret $\varphi(x)$
+as the result of a linear functional $X_{LF}$ mapping $\varphi$ to its
+value $\varphi(x)$ at $x$:
+
+\begin{align}
+X_{LF}:\ \mathcal S &\to \mathbb C\\
+\varphi &\mapsto \varphi(x)
+\end{align}
+
+$\mathcal S$ just denotes the physical subspace of the Hilbert space
+$L^2$ of square-integrable functions \cite{Madrid_2005}. Similarly, we can interpret
+$\varphi_m^*(x)$ as the result of the anti-linear functional $X_{AF}$
+mapping $\varphi_m$ to the complex conjugate of its value
+$\varphi_m^*(x)$ at $x$:
+
+\begin{align}
+X_{AF}:\ \mathcal S &\to \mathbb C\\
+\varphi &\mapsto \varphi^*(x)
+\end{align}
+
+With this interpretation we can rewrite the inner product:
+
+\begin{equation}
+\langle\varphi|\psi\rangle = \int dx\,\varphi^*(x)\psi(x) = \int dx\,X_{AF}(\varphi)\,X_{LF}(\psi). \label{eq:inner-product-pos-rep}
+\end{equation}
+
+Now we define the ket $|x\rangle$ to be the anti-linear functional and
+the bra $\langle x|$ to be the linear functional, since the inner
+product here is defined to be anti-linear in the first entry and
+linear in the second entry. Therefore we can rewrite
+\eqref{eq:inner-product-pos-rep} to:
+
+\begin{equation}
+\langle\varphi|\psi\rangle = \int dx\,\langle\varphi|x\rangle\langle x|\psi\rangle.
+\end{equation}
+
+Further we find, if $\varphi(x)$ and $\psi(x)$ are connected via a
+Fourier transform with $\varphi(p)$ and $\psi(p)$ respectively, then
+
+\begin{equation}
+\int dx\,\varphi^*(x)\psi(x) = \int dp\,\varphi^*(p)\psi(p).
+\end{equation}
+
+\begin{proof}
+\begin{align}
+\int dx\,\varphi^*(x)\psi(x)
+&= \int dx\int dp\,\frac{1}{\sqrt{2\pi\hbar}}e^{-ipx/\hbar}\varphi^*(p)
+\int dp'\,e^{ip'x/\hbar}\frac{1}{\sqrt{2\pi\hbar}}\psi(p') \\
+&= \int dp\,dp'\,\varphi^*(p)\psi(p')\,\frac{1}{2\pi\hbar}\int dx\,e^{ix(p'-p)/\hbar}\\
+&= \int dp\,dp'\,\varphi^*(p)\psi(p')\,\delta(p-p')\\
+&= \int dp\,\varphi^*(p)\psi(p).
+\end{align}
+\end{proof}
+
+So with the same arguments used for the position bra and ket, we find
+for momentum:
+
+\begin{equation}
+\langle\varphi|\psi\rangle = \int dp\,\langle\varphi|p\rangle\langle p|\psi\rangle.
+\end{equation}
+
+If we consider the Fourier relationship between $\varphi(x)$ and
+$\varphi(p)$, we can find an additional interpretation of the position
+and momentum bra's as plane waves:
+
+\begin{equation}
+\langle x|\varphi\rangle = \varphi(x) = \int dp\,\frac{1}{\sqrt{2\pi\hbar}}e^{ipx/\hbar}\varphi(p).
+\end{equation}
+
+At the same time we can interpret the scalar product over two
+momentum-dependent functions directly:
+
+\begin{equation}
+\langle x|\varphi\rangle = \int dp\,x^*(p)\varphi(p) = \int dp\,\langle x|p\rangle\langle p|\varphi\rangle,
+\end{equation}
+
+so we find
+
+\begin{equation}
+\langle p|x\rangle = x(p) = \frac{1}{\sqrt{2\pi\hbar}}e^{-ipx/\hbar}
+\end{equation}
+
+and analogously
+
+\begin{equation}
+p(x) = \langle x|p\rangle = \langle p|x\rangle^* = \frac{1}{\sqrt{2\pi\hbar}}e^{ipx/\hbar}.
+\end{equation}
+
+We can also use the plane-wave interpretation to determine the
+overlaps $\langle x|x'\rangle$ and $\langle p|p'\rangle$ by directly
+computing the inner product of the plane-wave functions:
+
+\begin{align}
+\langle x|x'\rangle &= \int dp\,\frac{1}{2\pi\hbar}e^{ipx/\hbar}e^{-ipx'/\hbar} = \delta(x-x')\\
+\langle p|p'\rangle &= \int dx\,\frac{1}{2\pi\hbar}e^{-ipx/\hbar}e^{ip'x/\hbar} = \delta(p-p').
+\end{align}
+
+At this point I should state that there are also approaches \cite{Madrid_2005}
+which determine various "inner products" of functionals purely as
+solutions to differential equations. Also a very nice approach, which remains loyal to the functional interpretation.
+The only downside is, that one is stuck with many bra-kets which are not understood as inner products.
+\paragraph{Note:}
+That being said the careful reader probably realized that the bra-ket $\langle x|p\rangle$ and its complex conjugate
+can also not be understood as an inner product. In this derivation we find its value via the fourier relations. Also 
+the interpretation of the position and momentum bra's and ket's as functionals is a preliminary to finding the inner product 
+interpretation later. One can also interpret the plane-waves as kernels to the functionals.
+
+\subsection*{The completeness relation in position and momentum representation}
+
+In the following, $\alpha$ can represent position $x$ or momentum $p$.
+We consider the completeness relation \eqref{eq:completeness-eigenfunction-phi} in
+$\alpha$-representation and expand the inner product in the
+$\alpha$-representation:
+
+\begin{align}
+\langle\alpha|\varphi\rangle &= \sum_n\sum_m \langle\alpha|\varphi_n\rangle\left(\mathbf S^{-1}\right)_{nm}\int d\alpha'\,\langle\varphi_m|\alpha'\rangle\langle\alpha'|\varphi\rangle\\
+\varphi(\alpha) &= \sum_n\sum_m \varphi_n(\alpha)\left(\mathbf S^{-1}\right)_{nm}\int d\alpha'\,\varphi_m^*(\alpha')\varphi(\alpha')
+\end{align}
+
+So we find, within an integral over $\alpha'$:
+
+\begin{equation}
+\sum_n\sum_m \varphi_n(\alpha)\left(\mathbf S^{-1}\right)_{nm}\varphi_m^*(\alpha') = \delta(\alpha-\alpha').
+\end{equation}
+
+We can also consider the inner product in momentum representation
+
+\begin{align}
+\langle x|\varphi\rangle &= \sum_n\sum_m \langle x|\varphi_n\rangle\left(\mathbf S^{-1}\right)_{nm}\int dp\,\langle\varphi_m|p\rangle\langle p|\varphi\rangle\\
+&= \int dp \sum_n\sum_m \varphi_n(x)\left(\mathbf S^{-1}\right)_{nm}\varphi_m^*(p)\,\varphi(p)
+\end{align}
+
+and find the mixed representation completeness relation
+
+\begin{equation}
+\sum_n\sum_m \varphi_n(x)\left(\mathbf S^{-1}\right)_{nm}\varphi_m^*(p) = \frac{1}{\sqrt{2\pi\hbar}}\exp(ipx/\hbar).
+\end{equation}
+
+\subsection{Orbital Creation and Annihilation operators}
+It is assumed that the diagonal entries of the Gram-Matrix are normalized. Ensuring normalization is practically not a problem
+and without normalized states the formulas become unnecessarily crowded.
+
+\paragraph{Bosons:}
+\begin{equation}
+  [\hat b_i, \hat b_j] = 0, \qquad
+  [\hat b^{\dagger}_i, \hat b^{\dagger}_j] = 0
+\end{equation}
+\textbf{Case 1:}\quad $[\hat b_i, \hat b_j^\dagger] = \delta_{ij}$
+\begin{equation}
+|n_1,\dots,n_L\rangle = \prod_{k=1}^L \frac{\left(\hat b_k^\dagger\right)^{n_k}}{\sqrt{n_k!}}\,|\mathrm{vac}\rangle
+\end{equation}
+
+\textbf{Case 2:}\quad $[\hat b_i, \hat b_j^\dagger] = \mathbf S_{ij}$
+\begin{equation}
+|n_1,\dots,n_L\rangle = \frac{1}{\sqrt{\operatorname{perm}(\mathbf S_{\mathrm{occ}})}}\prod_{k=1}^L \left(\hat b_k^\dagger\right)^{n_k}\,|\mathrm{vac}\rangle
+\end{equation}
+
+The $\dfrac{1}{\sqrt{n_k!}}$ term is just a special case of the more general 
+permanent formula (The permanent is contains the same terms as the determinant but all signs are plus signs).  
+The factor ensures normalization of the state. This can
+easily be shown just using the commutation relations of the operators.
+
+\paragraph{Fermions:}
+\begin{equation}
+  \{\hat c^{\dagger}_i, \hat c^{\dagger}_j\} = 0, \qquad
+  \{\hat c_i, \hat c_j\} = 0, \qquad
+  \{\hat c_i, \hat c^{\dagger}_j\} = \mathbf{S}_{ij}.
+\end{equation}
+
+\paragraph{First-quantized/Orbital-list:}
+\begin{equation}
+  |\vec k\rangle = |k_1, \dots, k_N\rangle
+  = \frac{1}{\sqrt{\operatorname{det}(\mathbf S_{\mathrm{occ}})}}\prod_{i=1}^{N} \hat c^{\dagger}_{k_i}\,|\text{vac}\rangle.
+\end{equation}
+More intuitive and useful for theoretical considerations.
+
+\paragraph{Second-quantized/Occupation-number:}
+\begin{align}
+  \hat c^{\dagger}_i\,|n_1, \dots, n_i, \dots, n_L\rangle
+  &= (-1)^{\sum_{j=1}^{i-1} n_j}\,(1 - n_i)\,
+     |n_1, \dots, n_i + 1, \dots, n_L\rangle, \\[4pt]
+  \hat c_i\,|n_1, \dots, n_i, \dots, n_L\rangle
+  &= (-1)^{\sum_{j=1}^{i-1} n_j}\,n_i\,
+     |n_1, \dots, n_i - 1, \dots, n_L\rangle.
+\end{align}
+This notation is used in computational approaches. Here the normalization factor of $\frac{\det(\mathbf S_{\mathrm{occ,\,after}})}{\det(\mathbf S_{\mathrm{occ,\,before}})}$ is 
+neglected.
+
+\subsection*{The mixed anti-commutator for fermions}
+
+Postulating the existence of the anti-commutator immediately returns its value:
+
+\begin{align*}
+\langle\varphi_n|\varphi_{n'}\rangle &= \langle\mathrm{vac}|\hat c_n \hat c_{n'}^\dagger|\mathrm{vac}\rangle \\
+&= -\langle\mathrm{vac}|\hat c_{n'}^\dagger \hat c_n|\mathrm{vac}\rangle + \{\hat c_n, \hat c_{n'}^\dagger\}
+\end{align*}
+
+So we find
+
+\begin{equation}
+\{\hat c_n, \hat c_{n'}^\dagger\} = \langle\varphi_n|\varphi_{n'}\rangle = \left(\mathbf{S}\right)_{nn'}
+\end{equation}
+
+We can also see that this definition returns the expected overlaps:
+
+\begin{align*}
+\langle\varphi_n\varphi_m|\varphi_{n'}\varphi_{m'}\rangle &= \langle\mathrm{vac}|\hat c_n\hat c_m \hat c_{m'}^\dagger\hat c_{n'}^\dagger|\mathrm{vac}\rangle \\
+&= -\langle\mathrm{vac}|\hat c_n \hat c_{m'}^\dagger \hat c_m \hat c_{n'}^\dagger|\mathrm{vac}\rangle + \langle\mathrm{vac}|\hat c_n\hat c_{n'}^\dagger|\mathrm{vac}\rangle\,\langle\varphi_m|\varphi_{m'}\rangle \\
+&= -\langle\mathrm{vac}|\hat c_n\hat c_{m'}^\dagger|\mathrm{vac}\rangle\,\langle\varphi_m|\varphi_{n'}\rangle + \langle\varphi_n|\varphi_{n'}\rangle\langle\varphi_m|\varphi_{m'}\rangle \\
+&= -\langle\varphi_n|\varphi_{m'}\rangle\langle\varphi_m|\varphi_{n'}\rangle + \langle\varphi_n|\varphi_{n'}\rangle\langle\varphi_m|\varphi_{m'}\rangle
+\end{align*}
+
+For the Slater determinants we would find
+
+\begin{align*}
+\int dx\,dy\ &\frac{1}{\sqrt2}\Big(\varphi_n(x)\varphi_m(y) - \varphi_m(x)\varphi_n(y)\Big)^*
+\frac{1}{\sqrt2}\Big(\varphi_{n'}(x)\varphi_{m'}(y) - \varphi_{m'}(x)\varphi_{n'}(y)\Big) \\
+&= \frac{1}{2}\Big[\langle\varphi_n|\varphi_{n'}\rangle\langle\varphi_m|\varphi_{m'}\rangle - \langle\varphi_n|\varphi_{m'}\rangle\langle\varphi_m|\varphi_{n'}\rangle
+- \langle\varphi_n|\varphi_{m'}\rangle\langle\varphi_m|\varphi_{n'}\rangle + \langle\varphi_n|\varphi_{n'}\rangle\langle\varphi_m|\varphi_{m'}\rangle \Big] \\
+&= \langle\varphi_n|\varphi_{n'}\rangle\langle\varphi_m|\varphi_{m'}\rangle - \langle\varphi_n|\varphi_{m'}\rangle\langle\varphi_m|\varphi_{n'}\rangle
+\end{align*}
+
+If the sets $\{n,m\}$ and $\{n',m'\}$ contain the same
+elements/orbitals, say $n=n'$ and $m=m'$, we find:
+
+\begin{align}
+\langle\varphi_n\varphi_m|\varphi_n\varphi_m\rangle
+&= \langle\varphi_n|\varphi_n\rangle\langle\varphi_m|\varphi_m\rangle - \langle\varphi_n|\varphi_m\rangle\langle\varphi_m|\varphi_n\rangle\\
+&= \det(\mathbf S_{\mathrm{occ}})
+\end{align}
+
+where the subscript ``occ'' denotes that $\mathbf S_{\mathrm{occ}}$ is
+the ``small'' Gram matrix of the occupied orbitals, not the one that
+contains the overlaps between all basis states:
+
+\begin{equation}
+\mathbf S_{\mathrm{occ}} = \begin{pmatrix}\langle\varphi_n|\varphi_n\rangle & \langle\varphi_n|\varphi_m\rangle\\ \langle\varphi_m|\varphi_n\rangle & \langle\varphi_m|\varphi_m\rangle\end{pmatrix}.
+\end{equation}
+
+If we had chosen $n=m'$ and $m=n'$, we would have found an additional
+minus sign, corresponding to $\mathrm{sgn}(\sigma)=-1$ for the
+transposition.
+
+To visualize the prefactor of each term, we first start talking about
+orbitals, because the annihilation operators correspond to bra-orbitals
+and the creation operators to ket-orbitals. Standard-ordering is
+achieved if we take the overlap of adjacent bra and ket orbitals always:
+
+\begin{align*}
+\langle\varphi_n\varphi_m|\varphi_{n'}\varphi_{m'}\rangle
+&= \langle\mathrm{vac}|\hat c_n\hat c_m\hat c_{m'}^\dagger\hat c_{n'}^\dagger|\mathrm{vac}\rangle \notag\\
+&\big\Downarrow \notag\\
+&\Big[(\langle\varphi_n|\langle\varphi_m|)(|\varphi_{m'}\rangle|\varphi_{n'}\rangle)\Big] \notag\\
+&\quad \langle\varphi_m|\varphi_{m'}\rangle\ \big[\langle\varphi_n|\big]\big[|\varphi_{n'}\rangle\big] \notag\\
+&\quad \langle\varphi_n|\varphi_{n'}\rangle\langle\varphi_m|\varphi_{m'}\rangle
+\end{align*}
+
+Whenever one anti-commutes with an operator/orbital first, before
+evaluating the anticommutator, that corresponds to an orbital appearing
+to the \emph{left} of the orbital even though it should be to the
+right in standard-ordering. So the prefactor becomes $(-1)^{n_L}$,
+where $n_L$ denotes the orbitals that are matched with an "earlier" (further to the left)
+bra-orbital than they would be in normal ordering --- or equivalently,
+the number of ket-orbitals that should be to the right of the
+corresponding ket-orbital. The product of all those factors represents
+the permutation-factor, as the number of permutations needed
+corresponds to the sum of the $n_L$.
+
+\textbf{Proof.} That the number of permutations corresponds to the sum
+of $n_L$ for each position.
+
+\emph{Strategy:} Start with the left-most position with $n_L > 0$ and
+commute the orbital through its left neighbors. The orbitals that
+$n_L$ refers to must be direct neighbors, otherwise you didn't choose
+the left-most position/orbital. Now iterate the procedure until you
+have found standard-ordering.
+
+Now we can also quickly convince ourselves that we find the same
+pattern for the overlap of two Slater determinants. First, for the
+bra Slater determinant we only consider the normal-ordered term:
+
+\begin{equation*}
+\varphi_1(x_1)\cdots\varphi_N(x_N)
+\end{equation*}
+
+Therefore the sign can only come from the term of the Slater
+determinant and corresponds to $(-1)^n$, with $n$ being the number of
+permutations required to reach normal-ordering. For the other bra
+terms we use the trick:
+
+\begin{align*}
+\langle\varphi_1|\varphi_1'\rangle \cdots \langle\varphi_j|\varphi_i'\rangle \cdots \langle\varphi_i|\varphi_j'\rangle \cdots \langle\varphi_N|\varphi_N'\rangle
+&= \langle\varphi_1|\varphi_1'\rangle \cdots \langle\varphi_i|\varphi_j'\rangle \cdots \langle\varphi_j|\varphi_i'\rangle \cdots \langle\varphi_N|\varphi_N'\rangle
+\end{align*}
+
+where $i<j$. In other words, we can move the permutations of the bra
+term onto the ket term, and we again find that the sign is just
+$(-1)^n$. So the behaviour is the same.
+
+\textbf{Note:} Here, in the Slater-determinant case, one finds all possible combinations  
+for each of the $N!$ bra terms; Also, notice that for the overlap of a Slater determinant 
+with itself all possible combinations just become $\det(\mathbf{S_{occ}})$ where $\mathbf{S_{occ}}$ is built with all the 
+occupied orbitals. however, through
+the normalization of bra- and ket-state we find the factor $\tfrac{1}{N!\det(\mathbf{S_{occ}})}$.
+
+\subsection*{Field Operators}
+
+\paragraph{Fundamental property:}
+\begin{equation}
+\hat\varPsi^\dagger(\alpha)|\mathrm{vac}\rangle = |\alpha\rangle
+\qquad\text{and}\qquad
+\langle\mathrm{vac}|\hat\varPsi(\alpha) = \langle\alpha|,
+\end{equation}
+where $\alpha\in\{x,p\}$.
+
+We can use \eqref{eq:completeness-eigenfunction}, for which we demonstrated that it
+holds between any bra-ket $\langle\gamma|\dots|\gamma'\rangle$
+with $\gamma,\gamma'\in\{x,p,\varphi_k\}$ (For the specific case of the eigenfunctions $\{\phi_{k}\}$ that \eqref{eq:completeness-eigenfunction}
+is an identity just acting on an element of the function space spanned by the eigenfunctions \eqref{eq:completeness-eigenfunction-phi}). 
+Therefore we can expand the
+anti-linear functional $|\alpha\rangle$ and evaluate against the
+$\{\varphi_k\}$, which span the space of test functions:
+
+\begin{align}
+\langle\varphi_k|\hat\varPsi^\dagger(\alpha)|\mathrm{vac}\rangle
+&= \langle\varphi_k|\sum_n\sum_m|\varphi_n\rangle\left(\mathbf S^{-1}\right)_{nm}\langle\varphi_m|\alpha\rangle\\
+\langle\varphi_k|\hat\varPsi^\dagger(\alpha)|\mathrm{vac}\rangle
+&= \langle\varphi_k|\sum_n\sum_m \hat c_n^\dagger|\mathrm{vac}\rangle\left(\mathbf S^{-1}\right)_{nm}\varphi_m^*(\alpha)
+\end{align}
+
+Since both functionals agree on all basis vectors, they agree on the
+entire space of test functions. And since the operators on both sides
+consist only of creation operators, we find operator equivalence:
+
+\begin{equation}
+\boxed{\hat\varPsi^\dagger(\alpha) = \sum_n\sum_m\left(\mathbf S^{-1}\right)_{nm}\varphi_m^*(\alpha)\,\hat c_n^\dagger}
+\end{equation}
+
+Before taking the hermitian conjugate, note that $\mathbf S^{-1}$ is
+hermitian, since $\mathbf S$ is hermitian:
+
+\begin{equation}
+\mathbf S\,\mathbf S^{-1} = \mathbb 1
+\ \Longrightarrow\ \left(\mathbf S^{-1}\right)^\dagger\mathbf S^\dagger = \left(\mathbf S^{-1}\right)^\dagger\mathbf S = \mathbb 1
+\ \Longrightarrow\ \left(\mathbf S^{-1}\right)^\dagger = \mathbf S^{-1},
+\end{equation}
+
+so that $\left(\mathbf S^{-1}\right)^*_{nm} = \left(\mathbf S^{-1}\right)_{mn}$.
+Taking the hermitian conjugate of the operator equivalence and
+relabelling $n\leftrightarrow m$:
+
+\begin{equation}
+\boxed{\hat\varPsi(\alpha) = \sum_n\sum_m\left(\mathbf S^{-1}\right)_{nm}\varphi_n(\alpha)\,\hat c_m}
+\end{equation}
+
+Further, we found that $\int d\alpha\,|\alpha\rangle\langle\alpha|$ acts
+like an identity inside any bra-ket $\langle\gamma|\dots|\gamma'\rangle$
+with $\gamma,\gamma'\in\{x,p,\varphi_k\}$. We use this to expand the
+eigenfunctions and again test against the eigenfunctions:
+
+\begin{align}
+\langle\varphi_k|\hat c_n^\dagger|\mathrm{vac}\rangle &= \langle\varphi_k|\int d\alpha\,|\alpha\rangle\langle\alpha|\hat c_n^\dagger|\mathrm{vac}\rangle\\
+\langle\varphi_k|\hat c_n^\dagger|\mathrm{vac}\rangle &= \langle\varphi_k|\int d\alpha\,\hat\varPsi^\dagger(\alpha)|\mathrm{vac}\rangle\,\varphi_n(\alpha)
+\end{align}
+
+With the same arguments as before we find the operator identity:
+
+\begin{equation}
+\boxed{\hat c_n^\dagger = \int d\alpha\,\hat\varPsi^\dagger(\alpha)\,\varphi_n(\alpha)}
+\end{equation}
+
+and by taking the hermitian conjugate
+
+\begin{equation}
+\boxed{\hat c_n = \int d\alpha\,\varphi_n^*(\alpha)\,\hat\varPsi(\alpha)}
+\end{equation}
+
+\paragraph{Consistency check.} Substituting the field expansion into
+the mode expansion returns the mode operator:
+
+\begin{equation}
+\int d\alpha\,\hat\varPsi^\dagger(\alpha)\,\varphi_n(\alpha)
+= \sum_{k,m}\left(\mathbf S^{-1}\right)_{km}\hat c_k^\dagger
+\underbrace{\int d\alpha\,\varphi_m^*(\alpha)\varphi_n(\alpha)}_{=\,S_{mn}}
+= \sum_k \delta_{kn}\,\hat c_k^\dagger = \hat c_n^\dagger.
+\end{equation}
+
+With the relationship between the field operators and
+creation/annihilation operators, we can establish the
+anti-commutators:
+
+\begin{align}
+\{\hat\varPsi(\alpha),\hat\varPsi^\dagger(\alpha')\}
+&= \sum_n\sum_m\sum_{n'}\sum_{m'}\left(\mathbf S^{-1}\right)_{nm}\varphi_n(\alpha)\left(\mathbf S^{-1}\right)_{n'm'}\varphi_{m'}^*(\alpha')\,\{\hat c_m,\hat c_{n'}^\dagger\}\\
+&= \sum_n\sum_m\sum_{n'}\sum_{m'}\left(\mathbf S^{-1}\right)_{nm}\left(\mathbf S\right)_{mn'}\left(\mathbf S^{-1}\right)_{n'm'}\varphi_n(\alpha)\varphi_{m'}^*(\alpha')\\
+&= \sum_n\sum_{m'}\left(\mathbf S^{-1}\right)_{nm'}\varphi_n(\alpha)\varphi_{m'}^*(\alpha')\\
+&= \delta(\alpha-\alpha')
+\end{align}
+
+and for the mixed anti-commutators:
+
+\begin{align}
+\{\hat\varPsi(\alpha),\hat c_k^\dagger\}
+&= \sum_n\sum_m\left(\mathbf S^{-1}\right)_{nm}\varphi_n(\alpha)\,\{\hat c_m,\hat c_k^\dagger\}\\
+&= \sum_n\sum_m\left(\mathbf S^{-1}\right)_{nm}\left(\mathbf S\right)_{mk}\varphi_n(\alpha)\\
+&= \sum_n \delta_{nk}\,\varphi_n(\alpha) = \varphi_k(\alpha)
+\end{align}
+
+and
+
+\begin{align}
+\{\hat c_k,\hat\varPsi^\dagger(\alpha)\}
+&= \sum_n\sum_m\left(\mathbf S^{-1}\right)_{nm}\varphi_m^*(\alpha)\,\{\hat c_k,\hat c_n^\dagger\}\\
+&= \sum_m \delta_{km}\,\varphi_m^*(\alpha) = \varphi_k^*(\alpha)
+\end{align}
+
+We find the three anti-commutators:
+
+\begin{empheq}[box=\fbox]{align}
+\{\hat\varPsi(\alpha),\hat\varPsi^\dagger(\alpha')\} &= \delta(\alpha-\alpha')\\
+\{\hat\varPsi(\alpha),\hat c_k^\dagger\} &= \varphi_k(\alpha)\\
+\{\hat c_k,\hat\varPsi^\dagger(\alpha)\} &= \varphi_k^*(\alpha)
+\end{empheq}
+
+\subsection*{The Slater Determinant in second quantization}
+
+This (anti-)commutation relation leads to a nice definition of the
+Slater determinant:
+
+\begin{equation}\label{eq:slater-determinant-first-second-connection}
+\boxed{\Phi_{\alpha_1\alpha_2\dots\alpha_N}(x_1,x_2,\dots,x_N) = \frac{1}{\sqrt{N!\det(\mathbf{S_{occ}})}}\langle\mathrm{vac}|\hat\varPsi(x_N)\cdots\hat\varPsi(x_1)\,\hat c_{\alpha_N}^\dagger\cdots\hat c_{\alpha_1}^\dagger|\mathrm{vac}\rangle}
+\end{equation}
+
+The normalization factor is the same for the Slater determinant in second and first quantization and will therefore be neglected
+in the following proof, that the formula \eqref{eq:slater-determinant-first-second-connection} correctly represents the Slater determinant
+in first quantization.
+The first nontrivial case we find for $N=2$:
+
+\begin{align}
+\hat{\Phi}_{12}(x_1,x_2)
+&= \langle\mathrm{vac}|\hat\varPsi(x_1)\hat\varPsi(x_2)\,\hat c_2^\dagger\hat c_1^\dagger|\mathrm{vac}\rangle\\
+&= \Big[\langle\mathrm{vac}|\hat\varPsi(x_1)\,\varphi_2(x_2)\,\hat c_1^\dagger|\mathrm{vac}\rangle
+- \langle\mathrm{vac}|\hat\varPsi(x_1)\,\hat c_2^\dagger\,\hat\varPsi(x_2)\,\hat c_1^\dagger|\mathrm{vac}\rangle\Big]\\
+&= \Big[\langle\mathrm{vac}|\varphi_1(x_1)\varphi_2(x_2)|\mathrm{vac}\rangle - \langle\mathrm{vac}|\varphi_2(x_2)\,\hat c_1^\dagger\,\hat\varPsi(x_1)|\mathrm{vac}\rangle\notag\\
+&\qquad - \langle\mathrm{vac}|\hat\varPsi(x_1)\,\hat c_2^\dagger\,\varphi_1(x_2)|\mathrm{vac}\rangle + \langle\mathrm{vac}|\hat\varPsi(x_1)\,\hat c_2^\dagger\hat c_1^\dagger\,\hat\varPsi(x_2)|\mathrm{vac}\rangle\Big]\\
+&= \Big[\varphi_1(x_1)\varphi_2(x_2) - \langle\mathrm{vac}|\varphi_2(x_1)\varphi_1(x_2)|\mathrm{vac}\rangle\notag\\
+&\qquad + \langle\mathrm{vac}|\varphi_1(x_2)\,\hat c_2^\dagger\,\hat\varPsi(x_1)|\mathrm{vac}\rangle\Big]\\
+&= \Big(\varphi_1(x_1)\varphi_2(x_2) - \varphi_1(x_2)\varphi_2(x_1)\Big)
+\end{align}
+
+where the tilde $\tilde{\Phi}$ denotes that the normalization factor is neglected.
+
+\paragraph{Induction step $N\to N+1$:}
+\begin{align}
+\langle\mathrm{vac}|\hat\varPsi(x_1)\cdots\hat\varPsi(x_{N+1})\,\hat c_{\alpha_{N+1}}^\dagger\cdots\hat c_{\alpha_1}^\dagger|\mathrm{vac}\rangle
+&= \varphi_{\alpha_{N+1}}(x_{N+1})\,\langle\mathrm{vac}|\hat\varPsi(x_1)\cdots\hat\varPsi(x_N)\,\hat c_{\alpha_N}^\dagger\cdots\hat c_{\alpha_1}^\dagger|\mathrm{vac}\rangle\notag\\
+&\quad - \langle\mathrm{vac}|\hat\varPsi(x_1)\cdots\hat\varPsi(x_N)\,\hat c_{\alpha_{N+1}}^\dagger\,\hat\varPsi(x_{N+1})\,\hat c_{\alpha_N}^\dagger\cdots\hat c_{\alpha_1}^\dagger|\mathrm{vac}\rangle\notag\\
+&\quad\ \vdots\notag\\
+&= \sum_{i=1}^{N+1}\varphi_i(x_{N+1})\cdot \mathrm{SD}\big(\varphi_1,\dots,\varphi_{i-1},\varphi_{i+1},\dots,\varphi_{N+1}\big)\,(-1)^{N+1-i}
+\end{align}
+
+This is just the recursive formula for a determinant if you, for
+example, imagine $\varphi_i(x_{N+1})$ for $i\in\{\alpha_1,\dots,\alpha_{N+1}\}$
+to be the first row and $\varphi_i(x_N)$ for $i\in\{1,\dots,N+1\}$ the
+second, and so on. Then ``developing'' the determinant after the first
+row gives the formula above.
+
+This result allows us to connect first and second quantization, or
+abstract representation and position representation, in the same way we
+connected it for the single-particle case, where $\varphi(x) = \langle x|\varphi\rangle$.
+Similarly, we find for the many-particle case the abstract general
+$N$-electron state:
+
+\begin{equation}
+\boxed{|\varphi\rangle = \sum_{\alpha_1<\dots<\alpha_N} a_{\alpha_1,\dots,\alpha_N}\,\hat c_{\alpha_N}^\dagger\cdots\hat c_{\alpha_1}^\dagger|\mathrm{vac}\rangle}
+\end{equation}
+
+and applying the bra
+
+\begin{equation}
+\boxed{\langle x_1,\dots,x_N| = \langle\mathrm{vac}|\hat\varPsi(x_1)\cdots\hat\varPsi(x_N)}
+\end{equation}
+
+to the abstract $N$-electron state gives the position
+representation / first quantization: a linear combination of Slater
+determinants.

@@ -1,0 +1,469 @@
+\chapter{Methods}\label{chapter:methods}
+
+\section{Generalized Prony Method}
+
+This section very closely follows the excellent phd thesis of Thomas Peter \cite{gen_prony_2013}.
+It is assumed that every eigenspace $V_j$ of the linear operator $\hat{A}$ is one-dimensional. 
+If the eigenspace is not one-dimensional, we choose a representative.
+Thus for each eigenvalue $\lambda_j$ there exists a unique eigenvector $v_j$.
+
+Furthermore, we assume that the function $f$ is $M$-sparse. Therefore, $M$ eigenfunctions suffice to represent the function exactly:
+\begin{equation*}
+    f = \sum_{j \in J} c_j\, v_j \qquad |J| = M
+\end{equation*}
+where $J$ is a proper subset of the set of all eigenfunctions of the linear operator $\hat{A}$.
+
+Due to the linearity of the operator $\hat{A}$ it holds:
+\begin{equation*}
+    \hat{A}^k f = \sum_{j \in J} c_j\, \lambda_j^{k}\, v_j
+\end{equation*}
+
+Now we assume a linear functional $F$, such that $F v_j \neq 0$ holds for all $j \in I$. 
+Then we can reconstruct $f$ with $2M$ values:
+\begin{equation*}
+    F(\hat{A}^k f), \qquad k = 0, \dots, 2M-1.
+\end{equation*}
+
+To find this reconstruction, we start with the general definition of a polynomial whose roots are given by $\lambda_j$:
+\begin{equation*}
+    P(z) := \prod_{j \in J} (z - \lambda_j)
+\end{equation*}
+Alternatively, this polynomial can be represented as a sum of trivial polynomials:
+\begin{equation*}
+    P(z) = \sum_{k=0}^{M} p_k\, z^{k}
+\end{equation*}
+where the $p_k$ are unknown and $p_M = 1$ is chosen. For $m \in \mathbb{N}$ we find:
+\begin{align*}
+    \sum_{k=0}^{M} p_k\, F(\hat{A}^{k+m} f) &= \sum_{k=0}^{M} p_k\, F\left( \sum_{j \in J} c_j\, \lambda_j^{k+m}\, v_j \right) = \\
+    &= \sum_{j \in J} c_j\, \lambda_j^{m} \underbrace{\left( \sum_{k=0}^{M} p_k\, \lambda_j^{k} \right)}_{P(\lambda_j) = 0}\, F v_j = 0
+\end{align*}
+
+which yields with $p_M = 1$ the following linear system of equations for $p_k$:
+\begin{equation*}
+    \sum_{k=0}^{M-1} p_k\, F(\hat{A}^{k+m} f) = -F(\hat{A}^{M+m} f)
+\end{equation*}
+
+The matrix $\underline{H} = \left[ F(\hat{A}^{k+m} f) \right]_{k,m}$ is invertible.
+
+\textbf{Proof:}
+\begin{align*}
+    \underline{H} = \left[ F(\hat{A}^{k+m} f) \right]_{k,m} &= \left[ \sum_{j \in J} c_j\, \lambda_j^{k+m}\, F(v_j) \right]_{k,m} \\
+    &= \left[ \sum_{j \in J} \lambda_j^{k}\, c_j\, F(v_j)\, \lambda_j^{m} \right]_{k,m} \\
+    &= \begin{pmatrix} \lambda_1^0 & \cdots & \lambda_M^0 \\ \lambda_1^1 & \cdots & \lambda_M^1 \\ \vdots & & \vdots \\ \lambda_1^{M-1} & \cdots & \lambda_M^{M-1} \end{pmatrix}
+    \begin{pmatrix} c_1 F(v_1) & & \text{\Large 0} \\ & \ddots & \\ \text{\Large 0} & & c_M F(v_M) \end{pmatrix}
+    \begin{pmatrix} \lambda_1^0 & \cdots & \lambda_1^{M-1} \\ \vdots & & \vdots \\ \lambda_M^0 & \cdots & \lambda_M^{M-1} \end{pmatrix}
+\end{align*}
+
+By assumption, none of the $c_j$ or $F(v_j)$ vanish, so the diagonal matrix is invertible. To show that the Vandermonde matrix
+\begin{equation*}
+    \underline{V}_{\lambda} := \left( \lambda_j^{k} \right)_{k=0,\, j \in J}^{M-1}
+\end{equation*}
+is also invertible, we use that for a square matrix invertibility is equivalent to linear independence of the rows and columns; We show it for the rows:
+\begin{equation*}
+    \sum_{k=0}^{M-1} c_k\, \lambda_j^{k} = 0 \qquad \forall j \in J \quad \text{with } |J| = M
+\end{equation*}
+A polynomial of degree $(M-1)$ has at most $(M-1)$ roots $\Rightarrow$ the system of equations cannot be satisfied $\Rightarrow$ all row vectors are linearly independent $\Rightarrow$ the matrix is invertible.
+
+The $p_k$ are thus uniquely determined. Now we can find the eigenvalues $\lambda_j$ as roots of the polynomial:
+\begin{equation*}
+    P(z) = \sum_{k=0}^{M} p_k\, z^{k} \qquad \text{with } p_M = 1
+\end{equation*}
+and ,for example, using a power method, we can find the eigenfunctions $v_j$.
+
+Alternatively, one can solve the system of equations $(\hat{A} - \lambda_j) v_j = 0$ directly or minimize $v_j^{\dagger}(\hat{A} - \lambda_j)^{\dagger}(\hat{A} - \lambda_j) v_j$.
+
+Finally, we only need to solve
+\begin{equation*}
+    \left[ F(\hat{A}^k f) \right]_k = \left[ \lambda_j^{k} \right]_{k,\, j \in J}\, \left[ F(v_j) \right]_{j \in J}\, \left( c_j \right)_{j \in J}
+\end{equation*}
+for the vector $\left[ F(v_j) c_j \right]_{j \in J}$ with $k = 0, \dots, 2M-1$. So an overdetermined system of equations. Further,
+if we know $\left[F(v_j)\right]_{j \in J}$ we can find the coefficients $\left[ c_j \right]_{j \in J}$.
+
+\subsection{Derivation of the Prony Method from the generalized Prony Method}
+
+The Prony method is obtained as a special case of the generalized Prony method by choosing $\hat{A} = \hat{T}(a) = \hat{T}_a$ and $F(f) = \int dx_0\, \delta(x_0)\, f(x_0)$. Here
+\begin{equation*}
+    \hat{T}(a)\, f(x_0) = f(x_0 + a).
+\end{equation*}
+With these definitions for the functional and the operator, we find the following formula for the coefficients of the characteristic polynomial:
+\begin{align*}
+    \sum_{k=0}^{M} p_k\, F(\hat{A}^{k+m} f) &= 0 \\
+    \sum_{k=0}^{M} p_k \int dx_0\, \delta(x_0)\, \hat{T}_a^{k+m}\, f(x_0) &= 0 \\
+    \sum_{k=0}^{M} p_k\, f((k+m)a) &= 0 \qquad 
+\end{align*}
+
+As a next step, we determine the roots of the characteristic polynomial / the eigenvalues of $\hat{T}_a$. In the case of the Prony method, we represent these as
+\begin{equation*}
+    \lambda_j = \exp(aT_j)
+\end{equation*}
+and thus find the eigenfunctions
+\begin{equation*}
+    \hat{T}_a\, \psi(x) = \exp(aT_j)\, \psi(x) \quad \Rightarrow \quad \psi(x) = \exp(T_j x).
+\end{equation*}
+To find the coefficients of the eigenfunction in the representation of $f(x)$, we only need to solve
+\begin{equation*}
+    F(\hat{A}^k f) = \sum_{j \in J} c_j\, \lambda_j^{k}\, F(v_j)
+\end{equation*}
+where
+\begin{equation*}
+    F(v_j) = \int dx_0\, \delta(x_0)\, \exp(T_j x_0) = 1
+\end{equation*}
+
+and
+\begin{equation*}
+    F(\hat{A}^k f) = F(\hat{T}_a^k f) = \int dx_0\, \delta(x_0)\, \hat{T}_a^k\, f(x_0) = f((k+1)a)
+\end{equation*}
+\begin{equation*}
+    f(k) = \sum_{j \in J} c_j\, \lambda_j^{k} \qquad k = 0, \dots, 2M-1
+\end{equation*}
+
+The Prony method solves the uniquely determined system of equations with $k = 0, \dots, M-1$ ($1, \dots, M$) and not the overdetermined one, as is the case with the generalized Prony method.
+
+\subsection{The Esprit Method}
+
+The standard Prony Method can only utilize $2M-1$ function evaluations, where $M$ has to be known.
+Therefore, we introduce the Esprit method, which can incorporate more data and allows us to formulate an educated 
+guess about the sparsity $M$.
+The idea is to replace the calculations of the $p_i$'s and instead directly calculate the zeros $\lambda_j$ of the polynomial:
+\begin{equation*}
+    \sum_k p_k z^k \qquad \text{with } \sum_k p_k \lambda_j^k = 0
+\end{equation*}
+
+As in the case of the Prony Method, we have:
+\begin{equation*}
+    \sum_k p_k\, F(\hat{A}^{k+m} f(x)) = 0
+\end{equation*}
+Let $(\underline{H})_{mk} = F(\hat{A}^{k+m} f(x)) = h(k+m)$, then
+\begin{equation*}
+    \underline{H}\, \vec{p} = 0
+\end{equation*}
+and with $p_{M'} = 1$
+\begin{equation*}
+    \begin{pmatrix} h(0) & \cdots & h(M'-1) \\ \vdots & & \vdots \\ h(M'-1) & \cdots & h(2M'-2) \end{pmatrix}
+    \begin{pmatrix} p_0 \\ \vdots \\ p_{M'-1} \end{pmatrix}
+    = \begin{pmatrix} -h(M') \\ \vdots \\ -h(2M'-1) \end{pmatrix}
+\end{equation*}
+
+Here we use $M'$, since $M'$ is an upper bound of the actual unknown sparsity $M$, so that we can use more data (in the case, where we know $M$).
+Here we see that the companion matrix to the polynomial $C_P$ connects the following two matrices:
+\begin{equation*}
+    \underbrace{\begin{pmatrix} h(0) & \cdots & h(M'-1) \\ \vdots & & \vdots \\ h(M'-1) & \cdots & h(2M'-2) \end{pmatrix}}_{:= \underline{H}(0)}
+    \underbrace{\begin{pmatrix} 0 & \cdots & & -p_0 \\ 1 & 0 & \cdots & -p_1 \\ & \ddots & \ddots & \vdots \\ 0 & & 1 & -p_{M'-1} \end{pmatrix}}_{\substack{\text{the minus does not} \\ \text{affect the zeros}}}
+    = \underbrace{\begin{pmatrix} h(1) & \cdots & h(M') \\ \vdots & & \vdots \\ h(M') & \cdots & h(2M'-1) \end{pmatrix}}_{:= \underline{H}(1)}
+\end{equation*}
+and the eigenvalues and eigenvectors of the companion matrix are also the eigenvalues and eigenvectors of the generalized eigenvalue problem:
+\begin{equation*}
+    \left[ -\lambda_j\, \underline{H}(0) + \underline{H}(1) \right] \vec{v}_j = 0 \quad \Rightarrow \quad \left[ -\lambda_j\, \underline{H}(0) + \underline{H}(0)\, \underline{C}_P \right] \vec{v}_j = 0
+\end{equation*}
+since $\underline{C}_P\vec{v}_j = \lambda_j \vec{v}_j$.
+
+Solving the full generalized eigenproblem will, in general, give too many eigenvalues. Therefore, it is necessary to isolate the dominating components of the large matrix. This can be achieved efficiently using the singular value decomposition:
+
+Let $\underline{H}$ denote the matrix, which contains all columns of $\underline{H}(0)$ and $\underline{H}(1)$ respectively:
+\begin{equation*}
+    \underline{H} = \begin{pmatrix} h(0) & \cdots & h(M') \\ \vdots & & \vdots \\ h(M'-1) & \cdots & h(2M'-1) \end{pmatrix} = \underline{U}\,\underline{S}\,\underline{V}
+\end{equation*}
+and let again $\underline{V}(0)$ denote the first $M'$ columns of $\underline{V}$ and $\underline{V}(1)$ the last $M'$ columns of $\underline{V}$. Then we find:
+\begin{equation*}
+    \underline{H}(0) = \underline{U}\,\underline{S}\,\underline{V}(0) \qquad\qquad \underline{H}(1) = \underline{U}\,\underline{S}\,\underline{V}(1)
+\end{equation*}
+
+Assuming the sparsity $M$ is known, the $M$ rows of $\underline{V}$ and the $M$ columns of $\underline{U}$ corresponding to the largest singular values are retained. The magnitude of the discarded singular values provide a measure of quality of the fit and the noise level present in the data.
+
+If $M$ is unknown, we can obtain a nice guess at this point,an initial estimate can be obtained by examining the singular value spectrum, for example by identifying a significant drop in the singular values or by using cutoff values.
+
+The generalized eigenproblem can be simplified using the SVD expressions:
+\begin{equation*}
+    -\lambda_j\, \underline{H}(0) + \underline{H}(1) = -\lambda_j\, \underline{U}\,\underline{S}\,\underline{V}(0) + \underline{U}\,\underline{S}\,\underline{V}(1)
+\end{equation*}
+or
+\begin{equation*}
+    = -\lambda_j\, \underline{U}'\,\underline{S}'\,\underline{V}'(0) + \underline{U}'\,\underline{S}'\,\underline{V}'(1)
+\end{equation*}
+
+where the primes denote the reduced matrices.
+
+\begin{equation*}
+    \left( -\lambda_j\, \underline{U}'\,\underline{S}'\,\underline{V}'(0) + \underline{U}'\,\underline{S}'\,\underline{V}'(1) \right) \vec{v}_j = \vec{0}
+\end{equation*}
+\begin{equation*}
+    \left( -\lambda_j\, \underline{V}'(0) + \underline{V}'(1) \right) \vec{v}_j = \vec{0}
+\end{equation*}
+\begin{equation*}
+    \underline{V}'(0)^{-1}\, \underline{V}'(1)\, \vec{v}_j = \lambda_j\, \vec{v}_j
+\end{equation*}
+or formulated differently, we want to solve the eigenproblem:
+\begin{equation*}
+    \underline{A}\, \vec{v}_j = \lambda_j\, \vec{v}_j
+\end{equation*}
+where $\underline{A}$ solves:
+\begin{equation*}
+    \underline{V}'(0)\, \underline{A} = \underline{V}'(1)
+\end{equation*}
+This will give us the eigenvalues and from these we proceed as usual.
+
+\section{DMRG}
+
+The tensor notation is the notation developed by Jan von Delft and demonstrated in his lecture \cite{tensornetworks}.
+The derivations also followly ate least loosely the derivations in the lecture.
+
+DMRG is a Tensor Network Method for determining the ground state of a Hamiltonian. 
+The method minimizes the energy $\langle \psi | \hat{H} | \psi \rangle$ under the constraint that the state remains normalized $\langle \psi | \psi \rangle = 1$. 
+A straightforward approach is using a Lagrange multiplier and minimizing the cost function:
+\begin{equation}
+    \langle \psi | \hat{H} | \psi \rangle - \lambda\big( \langle \psi | \psi \rangle - 1 \big) \label{eq:DMRG-cost}
+\end{equation}
+
+We want to minimize the above expression with respect to the tensors $[T_i]_{k_{i-1},\sigma_i,k_i}$ where
+\begin{equation*}
+    [\psi]_{\sigma_1 \dots \sigma_L} = \sum_{k_2} \dots \sum_{k_{L}} [T_1]_{k_1 \sigma_1 k_2} \dots [T_L]_{k_L \sigma_L k_{L+1}}
+\end{equation*}
+$k_1$ and $k_{L+1}$ are dummy indices and
+\begin{equation*}
+    |\psi\rangle = \sum_{\sigma_1} \dots \sum_{\sigma_L} [\psi]_{\sigma_1 \dots \sigma_L}\, |\sigma_1\rangle \otimes \dots \otimes |\sigma_L\rangle
+\end{equation*}
+with Hamiltonian
+
+\begin{equation*}
+\hat H = \sum_{\{\sigma\},\{\sigma'\}}
+   [H]_{\sigma_1\dots\sigma_L\,\sigma_1'\dots\sigma_L'}\;
+   |\sigma_1\dots\sigma_L\rangle\langle\sigma_1'\dots\sigma_L'|.
+\end{equation*}
+
+where the coefficents are given by:
+
+\begin{equation*}
+[H]_{\sigma_1\dots\sigma_L\,\sigma_1'\dots\sigma_L'} = \sum_{k_2}\cdots\sum_{k_L}
+   [h_1]_{k_1\,\sigma_1\sigma_1'\,k_2}\cdots
+   [h_L]_{k_L\,\sigma_L\sigma_L'\,k_{L+1}} \\[4pt]
+\end{equation*}
+
+Although the symbol $\sigma$ is commonly associated with spin degrees of freedom, her it denotes a general local physical index. 
+For example, $\sigma_j$ may represent a site occupation number and is not necessarily binary. Its range is determined by the
+dimension of the local physical Hilbert space.
+
+In tensor notation, equation \eqref{eq:DMRG-cost} takes the form:
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/dmrg_cost.png}   % no extension needed
+  \caption{DMRG cost function $\langle\psi|\hat H|\psi\rangle - \lambda(\langle\psi|\psi\rangle - 1)$
+           in tensor-network form. The MPS is in site-canonical form with respect to the site $i$.}
+  \label{fig:dmrg_cost}
+\end{figure}
+
+Taking the derivative by $\frac{\partial}{\partial A_i^{\dagger}}$ we find \ref{fig:dmrg_eigen_problem}, which is just a standard eigenvalue problem in graphical notation for the effective Hamiltonian \ref{fig:dmrg_effective_hamiltonian}.
+
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/dmrg_eigenproblem.png}   % no extension needed
+  \caption{DMRG eigenvalue problem in graphical notation.}
+  \label{fig:dmrg_eigen_problem}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/dmrg_effective_hamiltonian.png}   % no extension needed
+  \caption{DMRG effective Hamiltonian in graphical notation.}
+  \label{fig:dmrg_effective_hamiltonian}
+\end{figure}
+
+The derivative by $\lambda$ just leads to the auxiliary condition that the eigenvector 
+of the eigenvalue problem has to be normalized.
+The updated tensor $T_i$ is choosen as the (normalized) ground state of the effective Hamiltonian.
+A shift of the active site is performed by applying a QR-decomposition followed by a tensor contraction. 
+The only heuristic choices in this algorithm are the ranks of the original state, which can not be increased and 
+the choice of the ground state of the effective Hamiltonian as the updated tensor $T_i$ in the ground state of the entire Hamitonian.
+
+The MPO representation of the Hamiltonian can alternatively be expressed as a sum of, easier to interpret, $n$-tensor operators. 
+As an example, consider the non-interacting Hubbard Hamiltonian. The hopping terms correspond to identical two-site operators acting
+on neighbouring sites, while the chemical potential terms are represented by identical one-site operators.
+In $k$-space we would only find one-site operators, which would differ for every site.
+Figure \ref{fig:effective-hamiltonian-one-two-site} demonstrates the effective Hamiltonian in that case.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/effective_hamiltonian_one_two_site.png}   % no extension needed
+  \caption{Effective Hamiltonian with translation invariant one- and two-site operators.}
+  \label{fig:effective-hamiltonian-one-two-site}
+\end{figure}
+
+To find excited states or treat ground state degeneracy with DMRG, one must add another
+Langrange multiplier term to the cost function \eqref{eq:DMRG-cost}: 
+
+\begin{equation*}
+    \langle\psi|\hat H|\psi\rangle
+    - \lambda_1\big(\langle\psi|\psi\rangle - 1\big)
+    - \lambda_2\,\langle\psi|\phi\rangle - \bar{\lambda_2}\,\langle\phi|\psi\rangle
+\end{equation*}
+
+where $|\phi\rangle$ is the state and $|\psi\rangle$ should be orthogonal to, for example, the result from the previous DMRG calculation.
+Again by differentiating with respect to $T_i$ we find the effective vector $|\phi_{eff}\rangle$ sketched in figure \ref{fig:effective-vector}.
+With this vector one can build the projector:
+
+\begin{equation*}
+    \hat P = \mathbb{1} - |\phi_{\text{eff}}\rangle\langle\phi_{\text{eff}}|
+\end{equation*}
+
+and solve the eigenproblem of the effective Hamiltonian (figure \ref{fig:dmrg_eigen_problem}) in the projected space:
+
+\begin{equation*}
+    \hat P\,\hat H_{\text{eff}}\,\hat P\,|\psi_i\rangle = \lambda\,\hat P\,|\psi_i\rangle
+\end{equation*}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/DMRG_effective_vector.png}   % no extension needed
+  \caption{Effective Vector $|\phi_{eff}\rangle$. Where the double triangles denote state $|\phi\rangle$}
+  \label{fig:effective-vector}
+\end{figure}
+
+Generalizing single-site DMRG from an MPS structure to a general TTN structure does not change the 
+essence of the algorithm. The optimization problem still reduces to a one-site effective eigenproblem.
+However, the traversing pattern needs to be changed to a depth first pattern, 
+where we only start updating the nodes once we reach the first leaf.
+As we continue with the depth first traversion pattern, 
+every node that is traversed and was not yet updated, will
+be updated. Traversing here means not just moving from tensor to tensor, 
+but moving the canonical site i. Moving the canonical
+site i is achieved via QR-decompositions followed by contractions, as in the MPS case. 
+The iteration ends if the canonical site is at the 
+starting point and there are no neighbouring nodes/tensors that have not been updated.
+
+\section{TDVP}
+The time-dependent variational principle (TDVP) is a tensor network method, like DMRG,
+but used to time-evolve a TTN or MPS state. The algorithm is based on the observation
+that the time derivative of a tensor network lies in the tangent space of that network,
+i.e.\ the space spanned by all tensor networks that differ from the original by a single
+tensor. Thus, if the original network consists of $n$ tensors, its tangent space is
+spanned by $n$ states, one for each tensor. Crucially, $\hat H |\psi\rangle$ does not
+necessarily lie in this space, and the idea of the TDVP algorithm is to force
+$\hat H |\psi\rangle$ into the tangent space. Figure~\ref{fig:tangent-space-projector}
+shows the tangent space projector.
+
+Let us briefly argue that the tangent space projector indeed imposes the structure of
+the derivative onto $\hat H |\psi\rangle$. I follow the approach of Jan von Delft, but
+ignore the notion of kept and discarded spaces in the derivation. I will not show that
+the tangent space projector is in fact a projector: this is considerably easier with the
+kept and discarded spaces, and I have nothing to add to von Delft's derivation \cite{tensornetworks}.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/tangent-space-projector.png}
+\caption{Tangent space projector.}
+\label{fig:tangent-space-projector}
+\end{figure}
+We have the QR relationship shown in Figure~\ref{fig:QR-decomp} between the site tensors
+$T_i$, the left isometries $A_i$, and the matrices $R_i$. Differentiating the QR
+decomposition yields the relation in Figure~\ref{fig:left-iso-derivative} for the
+derivative of the left isometry $A_i$. Using contractions and QR decompositions, one can
+move the matrix $R_i$ and thereby place the canonical site in the desired position. Note
+that the left-hand side of the equation is then completed by left and right isometries
+alone.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/QR-decomp.png}
+\caption{QR decomposition in graphical notation.}
+\label{fig:QR-decomp}
+\end{figure}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/left-isometry-derivative.png}
+\caption{Derivative of the left isometry.}
+\label{fig:left-iso-derivative}
+\end{figure}
+With this relation in hand, we can compute the time derivative of the entire MPS. We take
+the MPS to be in site-canonical form, with the canonical site in the rightmost position
+$L$. Figure~\ref{fig:derivative-MPS} shows the resulting derivative. Comparing its
+structure to the tangent space projector in Figure~\ref{fig:tangent-space-projector}, one
+immediately sees that the two match exactly. We therefore obtain a differential equation
+for each tensor $T_i$ and each matrix $R_i$.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/derivative-MPS.png}
+\caption{Derivative of the entire MPS.}
+\label{fig:derivative-MPS}
+\end{figure}
+We can now use the time-evolution operators provided by these differential equations to
+evolve the MPS. To see how this works, again assume the MPS is in site-canonical form
+with the canonical site at $L$, and start at site $1$. We want to find $A_1(t_0+t)$:
+applying the time-evolution operator for $T_1$ gives
+$T_1(t_0+t) = A_1(t_0+t)\,R_1(t_0+t)$, from which we read off $A_1(t_0+t)$. To find
+$A_2(t_0+t)$, however, we must time-evolve $T_2(t_0) = R_1(t_0)\,A_2(t_0)$, which requires
+evolving the bond matrix $R_1$ backward in time. The procedure continues in the same way
+until we reach the last tensor $T_L(t_0)$.
+
+\textbf{Note:} The isometries have to be understood as the site-canonical isometries,
+even in the bond representation. As a consequence,
+the bond matrices are not necessarily diagonal. Moreover, all references to a QR decomposition imply the reduced (thin) QR decomposition.
+
+\section{Application: Fast Fourier Transform (FFT)}
+
+By comparing the physics convention (left) with the computer-science
+convention (\texttt{scipy}) on the right in \eqref{eq:fft-physics-conv}:
+\begin{equation}\label{eq:fft-physics-conv}
+  \exp(i\,\omega_k t_n) \;\overset{!}{=}\; \exp\!\Big(i\,2\pi k\,\tfrac{n}{N}\Big)
+\end{equation}
+
+one obtains
+\begin{equation*}\label{eq:fft-omega-t}
+  \omega_k := \frac{2\pi k}{t_{\text{end}} - t_{\text{start}}},
+  \qquad
+  t_n := \Delta t \cdot n .
+\end{equation*}
+
+\subsection{Fast Fourier Transform of a Delta Function}
+
+We assume the same realization of the delta function that we have been
+assuming throughout, only we do not take the limit $\eta \to 0$.
+This is characterized by a transition from a delta function $\delta(x)$ to a Lorentzian $L(x)$:
+\begin{equation*}\label{eq:delta-lorentzian}
+  L(\omega_k - \varepsilon)
+  = \frac{1}{\pi}\,\frac{\eta}{(\omega_k - \varepsilon)^2 + \eta^2},
+\end{equation*}
+and we want to calculate the correct normalization constant $C$ of the
+Fourier transform:
+\begin{equation*}\label{eq:fft-delta-sum}
+  C\, \sum_{k=1}^{N}
+     \exp\!\Big(i\,2\pi k\,\tfrac{n}{N}\Big)\,
+     L(\omega_k - \varepsilon)
+\end{equation*}
+
+\paragraph{Case: $\Delta\omega \gg \eta$.}
+In this scenario one will only ``hit'' the delta function if
+$\varepsilon \in \Omega$ with $\Omega = \{\,\omega_k \mid k \in [1, N]\,\}$.
+The value of the delta function at this position is given by
+\begin{equation*}\label{eq:delta-peak}
+  L(\varepsilon - \varepsilon) = \frac{1}{\pi\eta}.
+\end{equation*}
+Therefore, one has to choose
+\begin{equation*}\label{eq:fft-C}
+  C = \pi\eta .
+\end{equation*}
+
+\paragraph{Case: $\Delta\omega \approx \eta$.}
+This case is considered as academic study to create a smoother transition to the next case. In practice, one
+will either use the previous case, if possible, or approximate the normalization constant by the one in the integration limit.
+The Fourier transform now requires the normalization factor:
+\begin{equation*}\label{eq:fft-C-intermediate}
+  C = \frac{\pi}{\displaystyle\sum_{k}\frac{\eta}{(\omega_k - \varepsilon)^2 + \eta^2}} .
+\end{equation*}
+
+
+\paragraph{Case: $\Delta\omega \ll \eta$.}
+In this limit we assume that
+\begin{equation*}\label{eq:fft-sum-to-integral}
+  \Delta\omega \sum_{k}\frac{\eta}{(\omega_k - \varepsilon)^2 + \eta^2}
+  \;\approx\;
+  \int d\omega\,\frac{\eta}{(\omega - \varepsilon)^2 + \eta^2}
+  \;=\; \pi .
+\end{equation*}
+And thus we find
+\begin{equation*}\label{eq:fft-C-final}
+  C = \Delta\omega .
+\end{equation*}
+
+This is the most reliable case, and therefore we want
+$\Delta\omega \ll \eta$. For small $\eta$, we must compute the evolution over a long period of time. 
+In the case of imaginary time evolution a small $\eta$ also requires a long time 
+evolution, to ensure sufficient decay.

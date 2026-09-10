@@ -1,0 +1,11 @@
+# Ignore everything at the top level ...
+/*
+
+# ... except these
+!.gitignore
+!chapters/
+!*.tex
+!README.md
+!LICENSE
+!*.pdf
+!Makefile
