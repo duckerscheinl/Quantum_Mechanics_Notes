@@ -202,7 +202,755 @@ where $\underline{A}$ solves:
 \end{equation*}
 This will give us the eigenvalues and from these we proceed as usual.
 
+
+
+
 \section{DMRG}
+
+\subsection{Matrix Implementation}
+
+\subsubsection{Partial trace --- motivation}
+
+Assume a large system is composed of two subsystems $A$ and $B$, whose
+Hilbert spaces have dimensionality $n_A$ and $n_B$ respectively. Further, let
+$O\in\mathbb C^{n_A\times n_A}$ be an observable of subsystem $A$. Then
+the reduced density matrix
+
+\begin{equation}
+\rho_A = \operatorname{Tr}_B[\rho]
+\end{equation}
+
+is the appropriate representation of the state $\rho$ on subsystem $A$
+in the following sense:
+
+\begin{equation}
+\mathbb E\big[O\otimes I\big] = \operatorname{Tr}\big[(O\otimes I)\,\rho\big]
+= \operatorname{Tr}_A\big[O\,\operatorname{Tr}_B[\rho]\big] = \operatorname{Tr}_A\big[O\rho_A\big] = \mathbb E_A[O]
+\end{equation}
+
+\paragraph{Proof.} Define $\bar O = O\otimes I$, meaning
+
+\begin{equation}
+\bar O_{ii',\,jj'} = \begin{cases} O_{ij} & \text{if } i'=j'\\[2pt] 0 & \text{if } i'\neq j'\end{cases}
+\end{equation}
+
+with $i,j\in[0,n_A)$ and $i',j'\in[0,n_B)$.
+
+\begin{align}
+\operatorname{Tr}\big[\bar O\rho\big]
+&= \sum_{i,j,i',j'}\bar O_{ii',\,jj'}\;\rho_{jj',\,ii'}
+= \sum_{i,j}O_{ij}\sum_{i'}\rho_{ji',\,ii'}\\
+&= \sum_{i,j}O_{ij}\,\operatorname{Tr}_B[\rho]_{j,i}
+= \operatorname{Tr}_A\big[O\rho_A\big]
+\end{align}
+
+\paragraph{Proving uniqueness.}
+We are going to show that two matrices $\rho_A$ and $\rho_A'$, which
+both satisfy
+
+\begin{equation}
+\operatorname{Tr}_A\big[O\rho_A\big] = \operatorname{Tr}\big[(O\otimes I)\rho\big] = \operatorname{Tr}\big[O\rho_A'\big],
+\end{equation}
+
+agree entry for entry. Linearity of matrix multiplication and trace
+give:
+
+\begin{equation}
+\operatorname{Tr}_A\big[O(\rho_A-\rho_A')\big] = \operatorname{Tr}_A\big[O\rho_A\big] - \operatorname{Tr}_A\big[O\rho_A'\big] = 0.
+\end{equation}
+
+This must hold for all $O\in\mathbb C^{n_A\times n_A}$. We choose
+
+\begin{equation}
+O^{(\alpha,\beta)}_{ij} = \begin{cases}1 & \text{if } i=\alpha \text{ and } j=\beta\\ 0 & \text{else}\end{cases}
+\end{equation}
+
+so matrices with only a single non-zero entry. Then we find $\forall \alpha ,\beta \in [0,n_{A})$:
+
+\begin{align}
+0 &= \operatorname{Tr}_A\big[O^{(\alpha,\beta)}(\rho_A-\rho_A')\big] = \sum_{i,j}O^{(\alpha,\beta)}_{ij}\,(\rho_A-\rho_A')_{ji}\\
+0 &= (\rho_A-\rho_A')_{\beta,\alpha}\\
+(\rho_A')_{\beta,\alpha} &= (\rho_A)_{\beta,\alpha} \qquad\qquad\square
+\end{align}
+
+\subsubsection{Infinite DMRG -- Background}
+
+Used to estimate the energy density of the groundstate $\dfrac{E}{L}$. 
+Where $L$ denotes the number of sites.
+
+All terms of the Hamiltonian for which the $i$-th site is the leftmost
+site on which the operator acts are therefore
+
+\begin{align}
+H^{(i)} &= \sum_{n=1}^{N}\hat O^{(n)}_{i,\dots,i+n-1}\notag\\
+&= \sum_{n=1}^{N}\big[O^{(n)}\big]_{\sigma_i,\dots,\sigma_{i+n-1};\,\sigma_i',\dots,\sigma_{i+n-1}'}\;
+\big|\sigma_i\cdots\sigma_{i+n-1}\big\rangle\big\langle\sigma_i'\cdots\sigma_{i+n-1}'\big|,
+\end{align}
+
+Summation over all the sigmas is implied.
+
+\subsubsection{Algorithm -- exhaustive}
+
+The following describes a single iteration, which is repeated until
+convergence.
+
+We start with the ``left'' and ``right'' bases
+
+\begin{equation}
+\big\{\,|\alpha\rangle \;\big|\; \alpha\in[0,\chi)\,\big\}
+\qquad\text{and}\qquad
+\big\{\,|\beta\rangle \;\big|\; \beta\in[0,\chi)\,\big\},
+\end{equation}
+
+where $\chi$ is usually bounded from above by $\chi_{\max}$, which can
+be chosen. The bases were either determined in the previous iteration,
+or they span a one-dimensional space, i.e.\ $\alpha$ and $\beta$ are
+dummy indices.
+
+Now we expand the space within which we can search for the ground
+state, from
+
+\begin{equation}
+\operatorname{span}\Big(\big\{\,|\alpha,\beta\rangle \;\big|\; \alpha,\beta\in[0,\chi)\,\big\}\Big)
+\end{equation}
+
+to
+
+\begin{equation}
+\operatorname{span}\Big(\big\{\,|\alpha,\sigma_L,\sigma_R,\beta\rangle \;\big|\; \alpha,\beta\in[0,\chi),\ \sigma_L,\sigma_R\in[0,d)\,\big\}\Big),
+\end{equation}
+
+where $d$ is the dimension of the local space of a single physical leg,
+i.e.\ $d=2$ for spinless fermions and $d=4$ for spinful fermions.
+
+We assume that all operators act on this space, or can be extended to
+operators acting on that space by taking a Kronecker product with an
+identity matrix of the appropriate dimension. We will see later how to
+bring the operators into the correct form.
+
+Now we compute the ground state of the Hamiltonian
+
+\begin{equation}
+H = \sum_{\substack{\alpha,\sigma_L,\sigma_R,\beta\\ \alpha',\sigma_L',\sigma_R',\beta'}}
+H_{\alpha\sigma_L\sigma_R\beta,\;\alpha'\sigma_L'\sigma_R'\beta'}\;
+\big|\alpha\sigma_L\sigma_R\beta\big\rangle\big\langle\alpha'\sigma_L'\sigma_R'\beta'\big|.
+\end{equation}
+
+and denote the ground state by
+
+\begin{equation}
+|\Psi\rangle = \sum_{\alpha,\sigma_L,\sigma_R,\beta}
+\Psi_{\alpha\sigma_L\sigma_R\beta}\;\big|\alpha\,\sigma_L\,\sigma_R\,\beta\big\rangle.
+\end{equation}
+
+From the state we construct the density matrix:
+
+\begin{equation}
+\rho = |\Psi\rangle\langle\Psi| = \sum_{\substack{\alpha,\sigma_L,\sigma_R,\beta\\ \alpha',\sigma_L',\sigma_R',\beta'}}
+\Psi_{\alpha\sigma_L\sigma_R\beta}\,\Psi^*_{\alpha'\sigma_L'\sigma_R'\beta'}\;
+\big|\alpha\sigma_L\sigma_R\beta\big\rangle\big\langle\alpha'\sigma_L'\sigma_R'\beta'\big|.
+\end{equation}
+
+Now we want to reduce the amount of information we have to store,
+i.e.\ we want to reduce the dimension of the left and right subspace from $d\cdot\chi$ to
+dimension $\chi$.
+
+\paragraph{Step: $|\alpha\,\sigma_L\rangle \to |\alpha^{\mathrm{new}}\rangle$.}
+Trace out the right half:
+
+\begin{align}
+\rho_L = \operatorname{tr}_R[\rho]
+&= \sum_{\substack{\alpha,\sigma_L,\sigma_R,\beta\\ \alpha',\sigma_L'}}
+\Psi_{\alpha\sigma_L\sigma_R\beta}\,\Psi^*_{\alpha'\sigma_L'\sigma_R\beta}\;
+\big|\alpha\sigma_L\big\rangle\big\langle\alpha'\sigma_L'\big|\\
+&= \sum_{\alpha,\sigma_L,\,\alpha',\sigma_L'}
+\big(\underline{\Psi}\underline{\Psi}^\dagger\big)_{\alpha\sigma_L,\,\alpha'\sigma_L'}\;
+\big|\alpha\sigma_L\big\rangle\big\langle\alpha'\sigma_L'\big|,
+\end{align}
+
+where $(\underline{\Psi})_{i,j} = \Psi_{ij}$ (just reshaped into a matrix).
+
+Now we only want to keep the $\chi$ components that hold the most
+``information'' about the state.
+
+This corresponds to finding the eigenvectors with the largest
+magnitude eigenvalues of the matrix $\underline{M} = \underline{\Psi}\,\underline{\Psi}^\dagger$.
+(Note: $\underline{M}$ is positive semi-definite hermitian Matrix, so largest magnitude
+eqauls largest algebraically)
+However, we can skip the calculation of $\underline{M}$ and directly
+compute a singular value decomposition of
+$\underline{\Psi} = \underline{U}\,\underline{S}\,\underline{V}^\dagger$:
+
+\begin{equation}
+\underline{M} = \underline{\Psi}\,\underline{\Psi}^\dagger
+= \underline{U}\,\underline{S}\,\underline{S}^*\,\underline{U}^\dagger
+= \underline{U}\,\underline{S}^2\,\underline{U}^\dagger.
+\end{equation}
+
+Where $\underline{S}^*=\underline{S}$, since singular values are real (and positive or zero).
+So we find that the columns of $\underline{U}$ are the eigenvectors of
+$\underline{M}$, and the corresponding eigenvalues are the singular
+values squared.
+
+Now we find the reduced representation of $\underline{M}$ by
+neglecting the eigenvectors/columns of $\underline{U}$ that correspond
+to the smallest singular values.
+
+We can reinsert the reduced representation into the formula for
+$\rho_L$:
+
+\begin{align}
+\rho_L &= \sum_{\alpha,\sigma_L,\,\alpha',\sigma_L'}
+\big(\underline{M}^{(\mathrm{red})}\big)_{\alpha\sigma_L,\,\alpha'\sigma_L'}\;
+\big|\alpha\sigma_L\big\rangle\big\langle\alpha'\sigma_L'\big|\\
+&= \sum_{\substack{\alpha,\sigma_L,\,\alpha',\sigma_L'\\ \alpha_{\mathrm{new}},\,\alpha_{\mathrm{new}}'}}
+\big(\underline{U}^{(\mathrm{red})}\big)_{\alpha\sigma_L,\,\alpha_{\mathrm{new}}}
+\big(\underline{S}^{(\mathrm{red})}\big)^2_{\alpha_{\mathrm{new}},\,\alpha_{\mathrm{new}}}
+\big(\underline{U}^{(\mathrm{red})\dagger}\big)_{\alpha_{\mathrm{new}},\,\alpha'\sigma_L'}\;
+\big|\alpha\sigma_L\big\rangle\big\langle\alpha'\sigma_L'\big| \\
+&= \sum_{\alpha_{\mathrm{new}}} \underline{S}^{(\mathrm{red})}\big)^2_{\alpha_{\mathrm{new}},\,\alpha_{\mathrm{new}}} \big|\alpha_{\mathrm{new}}\big\rangle\big\langle\alpha_{\mathrm{new}}\big|
+\end{align}
+
+with
+
+\begin{equation}
+\boxed{\;|\alpha_{\mathrm{new}}\rangle = \sum_{\alpha,\sigma_L}\big(\underline{U}^{(\mathrm{red})}\big)_{\alpha\sigma_L,\,\alpha_{\mathrm{new}}}\;|\alpha\sigma_L\rangle\;}
+\end{equation}
+
+and 
+
+\begin{equation}
+\boxed{\;\langle\alpha_{\mathrm{new}}| = \sum_{\alpha,\sigma_L}\big(\underline{U}^{(\mathrm{red})\dagger}\big)_{\alpha_{\mathrm{new}},\alpha\sigma_L}\;\langle\alpha\sigma_L|\;}
+\end{equation}
+
+We can also find the typical matrix-vector-notation relationship by
+``moving'' the matrix from the basis elements onto the coefficients:
+
+\begin{align}
+|v\rangle &= \sum_{\alpha_{\mathrm{new}}}\big(\vec v_{\mathrm{new}}\big)_{\alpha_{\mathrm{new}}}\;|\alpha_{\mathrm{new}}\rangle\\
+&= \sum_{\alpha_{\mathrm{new}}}\big(\vec v_{\mathrm{new}}\big)_{\alpha_{\mathrm{new}}}
+\sum_{\alpha,\sigma_L}\big(\underline{U}^{(\mathrm{red})}\big)_{\alpha\sigma_L,\,\alpha_{\mathrm{new}}}\;|\alpha\sigma_L\rangle\\
+&= \sum_{\alpha,\sigma_L}\Big(\underline{U}^{(\mathrm{red})}\,\vec v_{\mathrm{new}}\Big)_{\alpha\sigma_L}\;|\alpha\sigma_L\rangle
+\end{align}
+
+or in matrix-vector notation, where we do not explicitly denote the
+basis:
+
+\begin{equation}
+\boxed{\;\vec v_{\mathrm{old}} = \underline{U}^{(\mathrm{red})}\,\vec v_{\mathrm{new}}\;}
+\end{equation}
+
+We can also find the inverse relationship:
+
+\begin{align}
+|v\rangle &= \sum_{\alpha_{\mathrm{new}}}\big(\vec v_{\mathrm{new}}\big)_{\alpha_{\mathrm{new}}}\;|\alpha_{\mathrm{new}}\rangle\\
+&= \sum_{\alpha_{\mathrm{new}}}\big(\vec v_{\mathrm{new}}\big)_{\alpha_{\mathrm{new}}}
+\sum_{\alpha,\sigma_L}\big(\underline{U}^{(\mathrm{red})}\big)_{\alpha\sigma_L,\,\alpha_{\mathrm{new}}}\;|\alpha\sigma_L\rangle\\
+|v\rangle &\overset{!}{=} \sum_{\alpha_{\mathrm{new}}}\big(\vec v_{\mathrm{new}}\big)_{\alpha_{\mathrm{new}}}
+\sum_{\alpha,\sigma_L}\big(\underline{U}^{(\mathrm{red})}\big)_{\alpha\sigma_L,\,\alpha_{\mathrm{new}}}
+\sum_{\alpha'_{\mathrm{new}}}\big(\underline{M}\big)_{\alpha\sigma_L,\,\alpha'_{\mathrm{new}}}\;|\alpha'_{\mathrm{new}}\rangle
+\end{align}
+
+so we find
+
+\begin{equation}
+\sum_{\alpha,\sigma_L}\big(\underline{U}^{(\mathrm{red})}\big)_{\alpha\sigma_L,\,\alpha_{\mathrm{new}}}
+\sum_{\alpha'_{\mathrm{new}}}\big(\underline{M}\big)_{\alpha\sigma_L,\,\alpha'_{\mathrm{new}}}\;|\alpha'_{\mathrm{new}}\rangle
+\overset{!}{=} |\alpha_{\mathrm{new}}\rangle
+\end{equation}
+
+\begin{equation}
+\sum_{\alpha'_{\mathrm{new}}}\big(\underline{M}^{T}\,\underline{U}^{(\mathrm{red})}\big)_{\alpha'_{\mathrm{new}},\,\alpha_{\mathrm{new}}}\;|\alpha'_{\mathrm{new}}\rangle
+\overset{!}{=} |\alpha_{\mathrm{new}}\rangle
+\end{equation}
+
+We choose
+
+\begin{equation}
+\underline{M}^{T} = \underline{U}^{(\mathrm{red})\dagger}.
+\end{equation}
+
+since any $\underline{U}^{(\mathrm{red})\dagger} + \underline{K}$
+where $\underline{K}\underline{U}^{(\mathrm{red})}=0$ would also fulfill
+the requirement. Here one could choose for any row of $\underline{K}$ any linear combination
+of the complex conjugates of the neglected eigenvectors.
+Inserting back into the expansion of $|\alpha\sigma_L\rangle$:
+
+\begin{equation}\label{eq:left-side-basis-el-ket}
+\boxed{\;|\alpha\sigma_L\rangle = \sum_{\alpha_{\mathrm{new}}}\big(\underline{U}^{(\mathrm{red})\dagger}\big)_{\alpha_{\mathrm{new}},\,\alpha\sigma_L}\;|\alpha_{\mathrm{new}}\rangle\;}
+\end{equation}
+
+analogously we find
+
+\begin{equation}\label{eq:left-side-basis-el-bra}
+\boxed{\;\langle\alpha\sigma_L| = \sum_{\alpha_{\mathrm{new}}}\big(\underline{U}^{(\mathrm{red})}\big)_{\,\alpha\sigma_L,\alpha_{\mathrm{new}}}\;\langle\alpha_{\mathrm{new}}|\;}
+\end{equation}
+
+We can use the projective basis transformations \eqref{eq:left-side-basis-el-ket} and
+\eqref{eq:left-side-basis-el-bra} to find the reduced representation of an operator
+in the new basis:
+
+\begin{equation}
+\hat O^{(L)} = \sum_{\alpha\sigma_L,\,\alpha'\sigma_L'}
+\big(\underline{O}^{(L)}\big)_{\alpha\sigma_L,\,\alpha'\sigma_L'}\;
+\big|\alpha\sigma_L\big\rangle\big\langle\alpha'\sigma_L'\big|
+\end{equation}
+
+\begin{align}
+\hat O^{(L)}_{\mathrm{red}} = \sum_{\alpha\sigma_L,\,\alpha'\sigma_L'}
+\big(\underline{O}^{(L)}\big)_{\alpha\sigma_L,\,\alpha'\sigma_L'}
+&\sum_{\alpha_{\mathrm{new}}}\big(\underline{U}^{(\mathrm{red})\dagger}\big)_{\alpha_{\mathrm{new}},\,\alpha\sigma_L}\;\big|\alpha_{\mathrm{new}}\big\rangle\notag\\
+&\times\sum_{\alpha'_{\mathrm{new}}}\big(\underline{U}^{(\mathrm{red})}\big)_{\alpha'\sigma_L',\,\alpha'_{\mathrm{new}}}\;\big\langle\alpha'_{\mathrm{new}}\big|
+\end{align}
+
+\begin{equation}\label{eq:projective-basis-trafo-left}
+\boxed{\;\hat O^{(L)}_{\mathrm{red}} = \sum_{\alpha_{\mathrm{new}},\,\alpha'_{\mathrm{new}}}
+\Big(\underline{U}^{(\mathrm{red})\dagger}\,\underline{O}^{(L)}\,\underline{U}^{(\mathrm{red})}\Big)_{\alpha_{\mathrm{new}},\,\alpha'_{\mathrm{new}}}\;
+\big|\alpha_{\mathrm{new}}\big\rangle\big\langle\alpha'_{\mathrm{new}}\big|\;}
+\end{equation}
+
+For this procedure to be applicable we obviously require $\hat O^{(L)}$
+to act only on the left subspace, meaning that an operator that would
+also act on the right subspace would have to be given in a
+Kronecker-factorized form. However, if one wants to avoid computing the
+Kronecker factorization, the formula can easily be extended to
+
+\begin{equation}
+\boxed{\;\hat O_{\mathrm{red}} = \sum_{\alpha_{\mathrm{new}},\,\alpha'_{\mathrm{new}},\,\gamma,\gamma'}
+\Big(\big(\underline{U}^{(\mathrm{red})\dagger}\otimes \underline{I}\big)\,\underline{O}\,\big(\underline{U}^{(\mathrm{red})}\otimes \underline{I}\big)\Big)_{\alpha_{\mathrm{new}}\sigma,\;\alpha'_{\mathrm{new}}\sigma'}\;
+\big|\alpha_{\mathrm{new}}\,\gamma\big\rangle\big\langle\alpha'_{\mathrm{new}}\,\gamma'\big|\;}
+\end{equation}
+
+Remains to change the right basis.
+
+\begin{align}
+\rho_R = \operatorname{tr}_L[\rho]
+&= \operatorname{tr}_L\Big[\sum_{\substack{\alpha\sigma_L\sigma_R\beta\\ \alpha'\sigma_L'\sigma_R'\beta'}}
+\Psi_{\alpha\sigma_L\sigma_R\beta}\,\Psi^*_{\alpha'\sigma_L'\sigma_R'\beta'}\;
+\big|\alpha\sigma_L\sigma_R\beta\big\rangle\big\langle\alpha'\sigma_L'\sigma_R'\beta'\big|\Big]\\
+&= \sum_{\substack{\sigma_R,\beta\\ \sigma_R',\beta'}}
+\big(\underline{\Psi}^{T}\underline{\Psi}^{*}\big)_{\sigma_R\beta,\,\sigma_R'\beta'}\;
+\big|\sigma_R\beta\big\rangle\big\langle\sigma_R'\beta'\big|\\
+&= \sum_{\substack{\sigma_R,\beta\\ \sigma_R',\beta'}}\sum_{\beta_{\mathrm{new}},\beta'_{\mathrm{new}}}
+\big(\underline{V}^{(\mathrm{red})*}\big)_{\sigma_R\beta,\,\beta_{\mathrm{new}}}
+\big(\underline{S}^{(\mathrm{red})2}\big)_{\beta_{\mathrm{new}},\,\beta'_{\mathrm{new}}}
+\big(\underline{V}^{(\mathrm{red})T}\big)_{\beta'_{\mathrm{new}},\,\sigma_R'\beta'}\;
+\big|\sigma_R\beta\big\rangle\big\langle\sigma_R'\beta'\big|\\
+&= \sum_{\beta_{\mathrm{new}},\,\beta'_{\mathrm{new}}}
+\big|\beta_{\mathrm{new}}\big\rangle\,\big(\underline{S}^{(\mathrm{red})2}\big)_{\beta_{\mathrm{new}},\,\beta'_{\mathrm{new}}}\,\big\langle\beta'_{\mathrm{new}}\big|
+\end{align}
+
+So we can read off:
+
+\begin{equation}
+\boxed{\;\big|\beta_{\mathrm{new}}\big\rangle = \sum_{\sigma_R,\beta}\big(\underline{V}^{(\mathrm{red})}\big)^{*}_{\sigma_R\beta,\,\beta_{\mathrm{new}}}\;\big|\sigma_R\beta\big\rangle\;}
+\end{equation}
+
+and
+
+\begin{equation}
+\boxed{\;\big\langle\beta_{\mathrm{new}}\big| = \sum_{\sigma_R,\beta}\big(\underline{V}^{(\mathrm{red})}\big)^{T}_{\beta_{\mathrm{new}},\,\sigma_R\beta}\;\big\langle\sigma_R\beta\big|\;}
+\end{equation}
+
+and from
+
+\begin{equation}
+\big|\beta_{\mathrm{new}}\big\rangle = \sum_{\sigma_R,\beta}\big(\underline{V}^{(\mathrm{red})}\big)^{*}_{\sigma_R\beta,\,\beta_{\mathrm{new}}}\;\big|\sigma_R\beta\big\rangle
+\end{equation}
+
+we want to find
+
+\begin{equation}
+\big|\sigma_R\beta\big\rangle \approx \sum_{\beta'_{\mathrm{new}}}\big(\underline{M}\big)_{\sigma_R\beta,\,\beta'_{\mathrm{new}}}\;\big|\beta'_{\mathrm{new}}\big\rangle,
+\end{equation}
+
+the approximation of $|\sigma_R\beta\rangle$ within the space spanned by
+$\big\{\,|\beta'_{\mathrm{new}}\rangle \;\big|\; \beta'_{\mathrm{new}}\in[0,\chi)\,\big\}$, such that
+
+\begin{equation}
+\big|\beta_{\mathrm{new}}\big\rangle = \sum_{\sigma_R,\beta}\big(\underline{V}^{(\mathrm{red})}\big)^{*}_{\sigma_R\beta,\,\beta_{\mathrm{new}}}
+\sum_{\beta'_{\mathrm{new}}}\big(\underline{M}\big)_{\sigma_R\beta,\,\beta'_{\mathrm{new}}}\;\big|\beta'_{\mathrm{new}}\big\rangle.
+\end{equation}
+
+This implies
+
+\begin{equation}
+\underline{M}^{T}\,\big(\underline{V}^{(\mathrm{red})}\big)^{*} \overset{!}{=} \mathbb{1}
+\end{equation}
+
+and we choose
+
+\begin{equation}
+\underline{M} = \underline{V}^{(\mathrm{red})}.
+\end{equation}
+
+Important: $\big(\underline{V}^{(\mathrm{red})}\big)^{\dagger}$ has shape $(\chi,\;d\cdot\chi)$.
+
+which gives
+
+\begin{equation}
+\boxed{\;\big|\sigma_R\beta\big\rangle = \sum_{\beta'_{\mathrm{new}}}\big(\underline{V}^{(\mathrm{red})}\big)^{T}_{\beta'_{\mathrm{new}},\,\sigma_R\beta}\;\big|\beta'_{\mathrm{new}}\big\rangle\;}
+\end{equation}
+
+Analogously we find:
+
+\begin{equation}
+\boxed{\;\big\langle\sigma_R\beta\big| = \sum_{\beta_{\mathrm{new}}}\big(\underline{V}^{(\mathrm{red})}\big)^{*}_{\sigma_R\beta,\,\beta_{\mathrm{new}}}\;\big\langle\beta_{\mathrm{new}}\big|\;}
+\end{equation}
+
+Now we can apply the projective basis transformation directly to an
+operator:
+
+\begin{equation}
+\hat O^{(R)} = \sum_{\substack{\sigma_R\beta\\ \sigma_R'\beta'}}
+\big(\underline{O}^{(R)}\big)_{\sigma_R\beta,\,\sigma_R'\beta'}\;
+\big|\sigma_R\beta\big\rangle\big\langle\sigma_R'\beta'\big|
+\end{equation}
+
+\begin{equation}\label{eq:projective-basis-trafo-right}
+\boxed{\;\hat O^{(R)}_{\mathrm{red}} = \sum_{\beta_{\mathrm{new}},\,\beta'_{\mathrm{new}}}
+\Big(\big(\underline{V}^{(\mathrm{red})}\big)^{T}\,\underline{O}^{(R)}\,\big(\underline{V}^{(\mathrm{red})}\big)^{*}\Big)_{\beta_{\mathrm{new}},\,\beta'_{\mathrm{new}}}\;
+\big|\beta_{\mathrm{new}}\big\rangle\big\langle\beta'_{\mathrm{new}}\big|\;}
+\end{equation}
+
+or in the expanded version
+
+\begin{equation}
+\boxed{\;\hat O_{\mathrm{red}} = \sum_{\substack{\beta_{\mathrm{new}},\,\beta'_{\mathrm{new}}\\ \gamma,\gamma'}}
+\Big(\big(\underline{I}\otimes\big(\underline{V}^{(\mathrm{red})}\big)^{T}\big)\,\underline{O}\,\big(\underline{I}\otimes\big(\underline{V}^{(\mathrm{red})}\big)^{*}\big)\Big)_{\gamma\beta_{\mathrm{new}},\;\gamma'\beta'_{\mathrm{new}}}\;
+\big|\gamma\,\beta_{\mathrm{new}}\big\rangle\big\langle\gamma'\,\beta'_{\mathrm{new}}\big|\;}
+\end{equation}
+
+Now we have trimmed everything back to act on a space spanned by
+$\{|\alpha_{\mathrm{new}}\,\beta_{\mathrm{new}}\rangle\}$ and we insert
+again two physical sites. In tensor notation we can denote the
+relationship between the Hamiltonian acting on
+$|\alpha\sigma_L\sigma_R\beta\rangle$ and the one acting on
+$|\alpha_{\mathrm{new}}\beta_{\mathrm{new}}\rangle$ as detailed in the
+next section, after a short preliminary.
+
+\subsubsection{Preliminary on tensor notation.}
+
+\begin{center}
+\begin{tikzpicture}[thick]
+  \draw (0,0) rectangle (4,0.9);
+  \node at (2,0.45) {$\underline{H}$};
+  \foreach \x/\lab in {0.5/{\alpha'}, 1.5/{\sigma_L'}, 2.5/{\sigma_R'}, 3.5/{\beta'}}
+    \draw (\x,0.9) -- (\x,1.6) node[above] {$\lab$};
+  \foreach \x/\lab in {0.5/{\alpha}, 1.5/{\sigma_L}, 2.5/{\sigma_R}, 3.5/{\beta}}
+    \draw (\x,0) -- (\x,-0.7) node[below] {$\lab$};
+\end{tikzpicture}
+\end{center}
+
+denotes a matrix
+
+\begin{equation}
+\big(\underline{H}\big)_{\alpha\sigma_L\sigma_R\beta,\;\alpha'\sigma_L'\sigma_R'\beta'},
+\end{equation}
+
+the labels on the legs denote the basis. This notation specifically
+chooses the up-legs as indexing the columns and the down-legs to index
+the rows.
+
+In the case of the remaining matrices
+
+\begin{center}
+\begin{tikzpicture}[thick]
+  \draw (0,0) rectangle (1,0.8);
+  \node at (0.5,0.4) {$\underline{M}$};
+  \draw (0,0.4) -- (-0.9,0.4) node[above left=-2pt] {$i$};
+  \draw (1,0.4) -- (1.9,0.4) node[above right=-2pt] {$j$};
+\end{tikzpicture}
+\end{center}
+
+represents $\big(\underline{M}\big)_{i,j}$, so the left legs index the
+rows and the right legs index the columns.
+
+In the case of multiple legs the order is to be interpreted as follows:
+
+\begin{center}
+\begin{tikzpicture}[thick]
+  \draw (0,0) rectangle (1.2,1.3);
+  \node at (0.6,0.65) {$\underline{M}$};
+  \draw (0,0.9) -- (-0.9,0.9) node[above left=-2pt] {$i$};
+  \draw (0,0.4) -- (-0.9,0.4) node[above left=-2pt] {$j$};
+  \draw (1.2,0.9) -- (2.1,0.9) node[above right=-2pt] {$i'$};
+  \draw (1.2,0.4) -- (2.1,0.4) node[above right=-2pt] {$j'$};
+\end{tikzpicture}
+\end{center}
+
+represents $\big(\underline{M}\big)_{ij,\;i'j'}$.
+
+\paragraph{Algorithm in tensor notation.}
+
+\begin{enumerate}
+\item Compute the ground state
+\begin{equation}
+|\Psi_0\rangle = \sum_{\alpha\sigma_L\sigma_R\beta}\big(\vec\Psi_0\big)_{\alpha\sigma_L\sigma_R\beta}\;\big|\alpha\sigma_L\sigma_R\beta\big\rangle
+\end{equation}
+with energy $E_{0}^{i}$ of the Hamiltonian:
+
+\begin{center}
+\begin{tikzpicture}[thick]
+  \draw (0,0) rectangle (4,0.9);
+  \node at (2,0.45) {$\underline{H}$};
+  \foreach \x/\lab in {0.5/{\alpha'}, 1.3/{\sigma_L'}, 2.7/{\sigma_R'}, 3.5/{\beta'}}
+    \draw (\x,0.9) -- (\x,1.6) node[above] {$\lab$};
+  \foreach \x/\lab in {0.5/{\alpha}, 1.3/{\sigma_L}, 2.7/{\sigma_R}, 3.5/{\beta}}
+    \draw (\x,0) -- (\x,-0.7) node[below] {$\lab$};
+\end{tikzpicture}
+\end{center}
+
+compute energy density:
+
+\begin{equation}
+    e^{i} = (E_{0}^{i}-E_{0}^{i-1})/2
+\end{equation}
+
+iterate until $e^{i}$ converges.
+
+\item Reshape to
+\begin{equation}
+\big(\underline{\Psi}_0\big)_{\alpha\sigma_L,\;\sigma_R\beta} = \big(\vec\Psi_0\big)_{\alpha\sigma_L\sigma_R\beta}
+\end{equation}
+
+\item Compute the SVD of $\underline{\Psi}_0 = \underline{U}\,\underline{S}\,\underline{V}^{\dagger}$.
+
+\item Only keep the $\chi_{\max}$ largest singular values:
+\begin{equation}
+\underline{\Psi}_0^{(\mathrm{red})} = \underline{U}^{(\mathrm{red})}\,\underline{S}^{(\mathrm{red})}\,\big(\underline{V}^{(\mathrm{red})}\big)^{\dagger}
+\end{equation}
+
+\item Find the Hamiltonian in the new basis with $\underline{U}^{(\mathrm{red})}$ and $\underline{V}^{(\mathrm{red})}$ (the (red) label is dropped in favor of greater readability):
+
+\begin{center}
+\begin{tikzpicture}[thick, scale=1.15]
+  % Hamiltonian
+  \draw (0,0) rectangle (5,1);
+  \node at (2.5,0.5) {$\underline{H}$};
+  % upper tensors
+  \draw (0.5,2.0) rectangle (1.7,3.0);
+  \node at (1.1,2.5) {$\underline{U}$};
+  \draw (3.3,2.0) rectangle (4.5,3.0);
+  \node at (3.9,2.5) {$\underline{V}^{\dagger}$};
+  % lower tensors
+  \draw (0.5,-3.0) rectangle (1.7,-2.0);
+  \node at (1.1,-2.5) {$\underline{U}^{*}$};
+  \draw (3.3,-3.0) rectangle (4.5,-2.0);
+  \node at (3.9,-2.5) {$\underline{V}^{T}$};
+  % upper left: alpha' into the upper slot, sigma_L' into the lower slot
+  \draw (0.7,1) -- (0.7,1.4) -- (-0.7,1.4) -- (-0.7,2.75) -- (0.5,2.75);
+  \node[right] at (0.7,1.2) {$\alpha'$};
+  \draw (1.5,1) -- (1.5,1.8) -- (-0.2,1.8) -- (-0.2,2.25) -- (0.5,2.25);
+  \node[right] at (1.5,1.4) {$\sigma_L'$};
+  % upper right: sigma_R' crosses beta' to reach the upper slot
+  \draw (3.5,1) -- (3.5,1.8) -- (5.2,1.8) -- (5.2,2.75) -- (4.5,2.75);
+  \node[left] at (3.5,1.4) {$\sigma_R'$};
+  \draw (4.3,1) -- (4.3,1.4) -- (5.7,1.4) -- (5.7,2.25) -- (4.5,2.25);
+  \node[left] at (4.3,1.2) {$\beta'$};
+  % new indices
+  \draw (1.7,2.5) -- (2.3,2.5);
+  \node[above] at (2.0,2.5) {$\alpha_{\mathrm{new}}'$};
+  \draw (3.3,2.5) -- (2.7,2.5);
+  \node[above] at (3.0,2.5) {$\beta_{\mathrm{new}}'$};
+  % lower left: alpha crosses sigma_L to reach the upper slot
+  \draw (0.7,0) -- (0.7,-1.4) -- (-0.7,-1.4) -- (-0.7,-2.25) -- (0.5,-2.25);
+  \node[right] at (0.7,-1.2) {$\alpha$};
+  \draw (1.5,0) -- (1.5,-1.8) -- (-0.2,-1.8) -- (-0.2,-2.75) -- (0.5,-2.75);
+  \node[right] at (1.5,-1.4) {$\sigma_L$};
+  % lower right: sigma_R already above beta, no crossing
+  \draw (3.5,0) -- (3.5,-1.8) -- (5.2,-1.8) -- (5.2,-2.25) -- (4.5,-2.25);
+  \node[left] at (3.5,-1.4) {$\sigma_R$};
+  \draw (4.3,0) -- (4.3,-1.4) -- (5.7,-1.4) -- (5.7,-2.75) -- (4.5,-2.75);
+  \node[left] at (4.3,-1.2) {$\beta$};
+  \draw (1.7,-2.5) -- (2.3,-2.5);
+  \node[above] at (2.0,-2.5) {$\alpha_{\mathrm{new}}$};
+  \draw (3.3,-2.5) -- (2.7,-2.5);
+  \node[above] at (3.0,-2.5) {$\beta_{\mathrm{new}}$};
+\end{tikzpicture}
+\end{center}
+
+\end{enumerate}
+
+\textbf{Note:} The $\underline{V}^{*}$ in the projective basis change formula \eqref{eq:projective-basis-trafo-right}
+becomes $\underline{V}^{\dagger}$ in the tensor notation, since the legs that leave the box on 
+the right side correspond to the columns.
+
+\paragraph{Example: Hamiltonian of the first two iterations.}
+The $(\mathrm{red})$ label will be dropped, so $\underline{U}^{(1)}$ and
+$\underline{U}^{(2)}$, etc., do refer to the reduced versions. The
+matrix underbars will also be neglected, so
+$U^{(1)} = \underline{U}^{(1)(\mathrm{red})}$.
+
+Start with original Hamiltonian acting on two sites:
+
+\begin{center}
+\begin{tikzpicture}[thick, scale=1.1]
+  % Hamiltonian
+  \draw (0,0) rectangle (3,1);
+  \node at (1.5,0.5) {$H$};
+  % upper legs
+  \draw (0.9,1) -- (0.9,2.1);
+  \node[right] at (0.9,1.7) {$\sigma_L^{(1)\prime}$};
+  \draw (2.1,1) -- (2.1,2.1);
+  \node[right] at (2.1,1.7) {$\sigma_R^{(1)\prime}$};
+  % lower legs
+  \draw (0.9,0) -- (0.9,-1.1);
+  \node[right] at (0.9,-0.7) {$\sigma_L^{(1)}$};
+  \draw (2.1,0) -- (2.1,-1.1);
+  \node[right] at (2.1,-0.7) {$\sigma_R^{(1)}$};
+\end{tikzpicture}
+\end{center}
+
+apply the projective basis change:
+
+\begin{center}
+\begin{tikzpicture}[thick, scale=1.1]
+  % Hamiltonian
+  \draw (0,0) rectangle (6,0.9);
+  \node at (3,0.45) {$H$};
+  % upper boxes
+  \draw (0.5,2.2) rectangle (1.7,3.2);
+  \node at (1.1,2.7) {$U^{(1)}$};
+  \draw (4.3,2.2) rectangle (5.5,3.2);
+  \node at (4.9,2.7) {$V^{(1)\dagger}$};
+  % lower boxes
+  \draw (0.5,-3.2) rectangle (1.7,-2.2);
+  \node at (1.1,-2.7) {$U^{(1)*}$};
+  \draw (4.3,-3.2) rectangle (5.5,-2.2);
+  \node at (4.9,-2.7) {$V^{(1)T}$};
+  % upper: sigma_L^(2)' wraps around left into U
+  \draw (1.5,0.9) -- (1.5,1.6) -- (-0.4,1.6) -- (-0.4,2.7) -- (0.5,2.7);
+  \node[right] at (1.5,1.25) {$\sigma_L^{(1)\prime}$};
+  % alpha^(1)' free leg out of U
+  \draw (1.7,2.7) -- (2.8,2.7);
+  \node[above] at (2.25,2.7) {$\alpha^{(1)\prime}$};
+  % beta^(1)' free leg into V^dagger
+  \draw (3.2,2.7) -- (4.3,2.7);
+  \node[above] at (3.75,2.7) {$\beta^{(1)\prime}$};
+  % V^dagger right leg wraps back into H
+  \draw (5.5,2.7) -- (6.4,2.7) -- (6.4,1.6) -- (4.5,1.6) -- (4.5,0.9);
+  \node[left] at (4.5,1.25) {$\sigma_R^{(1)\prime}$};
+  % lower mirror
+  \draw (1.5,0) -- (1.5,-1.6) -- (-0.4,-1.6) -- (-0.4,-2.7) -- (0.5,-2.7);
+  \node[right] at (1.5,-1.25) {$\sigma_L^{(1)}$};
+  \draw (1.7,-2.7) -- (2.8,-2.7);
+  \node[above] at (2.25,-2.7) {$\alpha^{(1)}$};
+  \draw (3.2,-2.7) -- (4.3,-2.7);
+  \node[above] at (3.75,-2.7) {$\beta^{(1)}$};
+  \draw (5.5,-2.7) -- (6.4,-2.7) -- (6.4,-1.6) -- (4.5,-1.6) -- (4.5,0);
+  \node[left] at (4.5,-1.25) {$\sigma_R^{(1)}$};
+\end{tikzpicture}
+\end{center}
+
+insert the next two sites:
+
+\begin{center}
+\begin{tikzpicture}[thick, scale=1.1]
+  % Hamiltonian: four legs up, four legs down
+  \draw (0,0) rectangle (8,1);
+  \node at (4,0.5) {$H$};
+  % upper boxes
+  \draw (0.3,2.4) rectangle (1.9,3.4);
+  \node at (1.1,2.9) {$U^{(1)}$};
+  \draw (6.1,2.4) rectangle (7.7,3.4);
+  \node at (6.9,2.9) {$V^{(1)\dagger}$};
+  % lower boxes
+  \draw (0.3,-3.4) rectangle (1.9,-2.4);
+  \node at (1.1,-2.9) {$U^{(1)*}$};
+  \draw (6.1,-3.4) rectangle (7.7,-2.4);
+  \node at (6.9,-2.9) {$V^{(1)T}$};
+  % --- upper legs of H ---
+  % leg 1: sigma_L^(1)' -> wraps left into U
+  \draw (0.9,1) -- (0.9,1.8) -- (-0.4,1.8) -- (-0.4,2.9) -- (0.3,2.9);
+  \node[right] at (0.9,1.35) {$\sigma_L^{(1)\prime}$};
+  % leg 2: sigma_L^(2)' free
+  \draw (2.9,1) -- (2.9,2.5);
+  \node[right] at (2.9,1.8) {$\sigma_L^{(2)\prime}$};
+  % leg 3: sigma_R^(2)' free
+  \draw (5.1,1) -- (5.1,2.5);
+  \node[right] at (5.1,1.8) {$\sigma_R^{(2)\prime}$};
+  % leg 4: sigma_R^(1)' -> wraps right into V
+  \draw (7.1,1) -- (7.1,1.8) -- (8.4,1.8) -- (8.4,2.9) -- (7.7,2.9);
+  \node[right] at (7.1,1.35) {$\sigma_R^{(1)\prime}$};
+  % free indices from U and V (upper)
+  \draw (1.9,2.9) -- (3.1,2.9);
+  \node[above] at (2.5,2.9) {$\alpha^{(1)\prime}$};
+  \draw (4.9,2.9) -- (6.1,2.9);
+  \node[above] at (5.5,2.9) {$\beta^{(1)\prime}$};
+  % --- lower legs of H (mirror) ---
+  \draw (0.9,0) -- (0.9,-1.8) -- (-0.4,-1.8) -- (-0.4,-2.9) -- (0.3,-2.9);
+  \node[right] at (0.9,-1.35) {$\sigma_L^{(1)}$};
+  \draw (2.9,0) -- (2.9,-2.5);
+  \node[right] at (2.9,-1.8) {$\sigma_L^{(2)}$};
+  \draw (5.1,0) -- (5.1,-2.5);
+  \node[right] at (5.1,-1.8) {$\sigma_R^{(2)}$};
+  \draw (7.1,0) -- (7.1,-1.8) -- (8.4,-1.8) -- (8.4,-2.9) -- (7.7,-2.9);
+  \node[right] at (7.1,-1.35) {$\sigma_R^{(1)}$};
+  \draw (1.9,-2.9) -- (3.1,-2.9);
+  \node[above] at (2.5,-2.9) {$\alpha^{(1)}$};
+  \draw (4.9,-2.9) -- (6.1,-2.9);
+  \node[above] at (5.5,-2.9) {$\beta^{(1)}$};
+\end{tikzpicture}
+\end{center}
+
+apply next projective bassis change:
+
+\begin{center}
+\begin{tikzpicture}[thick, scale=0.9]
+  % Hamiltonian
+  \draw (0,0) rectangle (11,1);
+  \node at (5.5,0.5) {$H$};
+  % upper boxes
+  \draw (0.2,2.6) rectangle (1.6,3.6);  \node at (0.9,3.1) {$U^{(1)}$};
+  \draw (2.8,2.6) rectangle (4.2,3.6);  \node at (3.5,3.1) {$U^{(2)}$};
+  \draw (6.8,2.6) rectangle (8.2,3.6);  \node at (7.5,3.1) {$V^{(2)\dagger}$};
+  \draw (9.4,2.6) rectangle (10.8,3.6); \node at (10.1,3.1) {$V^{(1)\dagger}$};
+  % lower boxes
+  \draw (0.2,-3.6) rectangle (1.6,-2.6);  \node at (0.9,-3.1) {$U^{(1)*}$};
+  \draw (2.8,-3.6) rectangle (4.2,-2.6);  \node at (3.5,-3.1) {$U^{(2)*}$};
+  \draw (6.8,-3.6) rectangle (8.2,-2.6);  \node at (7.5,-3.1) {$V^{(2)T}$};
+  \draw (9.4,-3.6) rectangle (10.8,-2.6); \node at (10.1,-3.1) {$V^{(1)T}$};
+  % --- upper wiring ---
+  \draw (1.0,1) -- (1.0,1.7) -- (-0.5,1.7) -- (-0.5,3.1) -- (0.2,3.1);
+  \node[right] at (1.0,1.35) {$\sigma_L^{(1)\prime}$};
+  \draw (1.6,3.3) -- (2.8,3.3);
+  \node[above] at (2.2,3.3) {$\alpha^{(1)\prime}$};
+  \draw (3.4,1) -- (3.4,2.2) -- (2.3,2.2) -- (2.3,2.9) -- (2.8,2.9);
+  \node[right] at (3.4,1.6) {$\sigma_L^{(2)\prime}$};
+  \draw (4.2,3.1) -- (5.3,3.1);
+  \node[above] at (4.75,3.1) {$\alpha^{(2)\prime}$};
+  \draw (5.7,3.1) -- (6.8,3.1);
+  \node[above] at (6.25,3.1) {$\beta^{(2)\prime}$};
+  % sigma_R^(2)' crosses the beta^(1)' line
+  \draw (7.6,1) -- (7.6,2.2) -- (8.7,2.2) -- (8.7,3.3) -- (8.2,3.3);
+  \node[right] at (7.6,1.6) {$\sigma_R^{(2)\prime}$};
+  \draw (8.2,2.9) -- (9.4,2.9);
+  \node[below] at (9.0,2.9) {$\beta^{(1)\prime}$};
+  \draw (10.8,3.1) -- (11.3,3.1) -- (11.3,1.7) -- (10.0,1.7) -- (10.0,1);
+  \node[right] at (10.0,1.35) {$\sigma_R^{(1)\prime}$};
+  % --- lower wiring ---
+  \draw (1.0,0) -- (1.0,-1.7) -- (-0.5,-1.7) -- (-0.5,-3.1) -- (0.2,-3.1);
+  \node[right] at (1.0,-1.35) {$\sigma_L^{(1)}$};
+  \draw (1.6,-2.9) -- (2.8,-2.9);
+  \node[above] at (2.2,-2.9) {$\alpha^{(1)}$};
+  % sigma_L^(2) crosses the alpha^(1) line
+  \draw (3.4,0) -- (3.4,-2.2) -- (2.3,-2.2) -- (2.3,-3.3) -- (2.8,-3.3);
+  \node[right] at (3.4,-1.6) {$\sigma_L^{(2)}$};
+  \draw (4.2,-3.1) -- (5.3,-3.1);
+  \node[above] at (4.75,-3.1) {$\alpha^{(2)}$};
+  \draw (5.7,-3.1) -- (6.8,-3.1);
+  \node[above] at (6.25,-3.1) {$\beta^{(2)}$};
+  \draw (7.6,0) -- (7.6,-2.2) -- (8.7,-2.2) -- (8.7,-2.9) -- (8.2,-2.9);
+  \node[right] at (7.6,-1.6) {$\sigma_R^{(2)}$};
+  \draw (8.2,-3.3) -- (9.4,-3.3);
+  \node[below] at (9.0,-3.3) {$\beta^{(1)}$};
+  \draw (10.8,-3.1) -- (11.3,-3.1) -- (11.3,-1.7) -- (10.0,-1.7) -- (10.0,0);
+  \node[right] at (10.0,-1.35) {$\sigma_R^{(1)}$};
+\end{tikzpicture}
+\end{center}
+
+\subsection{MPS Implementation}
 
 The tensor notation is the notation developed by Jan von Delft and demonstrated in his lecture \cite{tensornetworks}.
 The derivations also followly ate least loosely the derivations in the lecture.
@@ -330,6 +1078,9 @@ but moving the canonical site i. Moving the canonical
 site i is achieved via QR-decompositions followed by contractions, as in the MPS case. 
 The iteration ends if the canonical site is at the 
 starting point and there are no neighbouring nodes/tensors that have not been updated.
+
+
+
 
 \section{TDVP}
 The time-dependent variational principle (TDVP) is a tensor network method, like DMRG,
